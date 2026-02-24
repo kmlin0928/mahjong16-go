@@ -318,7 +318,7 @@ func main() {
 		p.gates = m.gates(p)
 		fmt.Printf(" 打後聽牌:")
 		for gate, chance := range p.gates {
-			fmt.Printf(" %s=%f", m.nToChinese(gate), chance)
+			fmt.Printf(" %s=%d", m.nToChinese(gate), chance)
 		}
 		if len(m.remain) <= 0 {
 			fmt.Printf("\n和局")
