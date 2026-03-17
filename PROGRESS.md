@@ -21,12 +21,13 @@
 - **驗收**：兩個類別可各自初始化且欄位名稱語意明確
 - Commit `f2e67c4`：refactor(mahjong-py): 拆分 Player 為 PlayerState 與 AIContext 資料類別
 
-### 3. [/] 實作發牌與花牌補牌邏輯
+### 3. [v] 實作發牌與花牌補牌邏輯
 - **檔案範圍**：`mahjong.py`
 - **摘要**：`deal_one()`、`init_deal()`、`show_bonus()`、`_draw_bonus()` 對應原版邏輯，含隨機洗牌
 - **驗收**：`init_deal()` 後每位玩家恰有 16 張非花牌
+- Commit `eedad67`：feat(mahjong-py): 實作發牌、補花與見牌初始化邏輯
 
-### 4. [ ] 實作胡牌判定演算法
+### 4. [/] 實作胡牌判定演算法
 - **檔案範圍**：`mahjong.py`
 - **摘要**：對應 `is_win()`、`is_suit()`（Theorem 1）、`find_pair()`、`find_suit_pair()`（Theorem 2）、`find_honor_pair()`，加上 docstring 解釋演算法來源
 - **驗收**：已知胡牌手牌輸入 `is_win()` 回傳 `True`，未胡回傳 `False`

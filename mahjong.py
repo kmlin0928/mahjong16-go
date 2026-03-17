@@ -193,6 +193,193 @@ class Mahjong:
 
 
 # ---------------------------------------------------------------------------
+# 胡牌判定演算法
+# 參考論文：arXiv:1707.07345
+# ---------------------------------------------------------------------------
+
+def is_honor(honor: list[int]) -> bool:
+    """檢查字牌分佈是否合法（每種字牌只能是 0 或 3 張刻子）。
+
+    Args:
+        honor: 長度 HONOR_KINDS 的列表，各索引代表一種字牌的出現次數
+
+    Returns:
+        合法（全為 0 或 3）回傳 True，否則 False
+    """
+    return all(c == 0 or c == 3 for c in honor)
+
+
+def is_suit(suited: list[int]) -> bool:
+    """Theorem 1：以貪婪遞迴判斷數牌是否可完整分解為刻子或順子。
+
+    從最小牌面開始，遇到 >= 3 張先消刻子後遞迴；
+    遇到 1–2 張嘗試消順子後遞迴；負數或無法消則回傳 False。
+
+    參考：arXiv:1707.07345 Theorem 1
+
+    Args:
+        suited: 長度 SUITED_KINDS（27）的列表，索引為牌面種類，值為張數
+
+    Returns:
+        可完整分解回傳 True，否則 False
+    """
+    s = suited[:]
+    for suit in range(SUIT_COUNT):
+        base = suit * TILES_PER_SUIT
+        for offset in range(TILES_PER_SUIT):
+            i = base + offset
+            n = s[i]
+            if n < 0:
+                return False
+            if n == 0:
+                continue
+            if n >= 3:
+                s[i] -= 3
+                return is_suit(s)   # 遞迴：從頭再掃
+            # n == 1 or 2：必須組成順子
+            if offset + 2 >= TILES_PER_SUIT or s[i + 1] < 1 or s[i + 2] < 1:
+                return False
+            s[i] -= 1
+            s[i + 1] -= 1
+            s[i + 2] -= 1
+            return is_suit(s)       # 遞迴：從頭再掃
+    return True
+
+
+def _find_i_pair(s: list[int], i: int) -> bool:
+    """判斷 s[i] 與 s[i+1] 是否為相同牌面的對子（且為第一次出現）。
+
+    Args:
+        s:    已排序的牌號列表
+        i:    候選位置索引
+
+    Returns:
+        是對子且為首次出現回傳 True
+    """
+    if i + 1 >= len(s):
+        return False
+    if s[i] // COPIES != s[i + 1] // COPIES:
+        return False
+    if i > 0 and s[i - 1] // COPIES == s[i] // COPIES:
+        return False    # 避免重複計算同一對
+    return True
+
+
+def _find_suit_pairs(s: list[int]) -> list[int]:
+    """Theorem 2：利用牌面 mod 3 分組，快速找出數牌中可能的將牌候選索引。
+
+    參考：arXiv:1707.07345 Theorem 2
+
+    Args:
+        s: 已排序、同一花色的牌號子列表
+
+    Returns:
+        候選對子的起始索引列表（相對於 s）
+    """
+    bins: list[list[int]] = [[], [], []]
+    for i, tile in enumerate(s):
+        bins[(tile // COPIES) % 3].append(i)
+
+    counts = [len(b) for b in bins]
+    # 找 mod 3 餘數不同的那組，將牌必在其中
+    if counts[0] % 3 != counts[1] % 3:
+        target = 0 if counts[0] % 3 != counts[2] % 3 else 1
+    else:
+        target = 2
+    return bins[target]
+
+
+def find_pair(hand17: list[int]) -> tuple[list[int], list[int], list[int]]:
+    """將 17 張已排序手牌分析出各種牌型的分佈，並找出所有候選將牌索引。
+
+    Args:
+        hand17: 長度 17 的已排序牌號列表
+
+    Returns:
+        (suited, honor, pair_indices)
+        - suited: 長度 SUITED_KINDS 的數牌張數分佈
+        - honor:  長度 HONOR_KINDS 的字牌張數分佈
+        - pair_indices: 所有候選將牌在 hand17 中的起始索引
+    """
+    suited = [0] * SUITED_KINDS
+    honor = [0] * HONOR_KINDS
+    pairs: list[int] = []
+
+    # 分花色處理數牌
+    boundaries = [
+        (0, SUITED_END // COPIES * COPIES),            # 筒
+        (SUITED_END // COPIES * COPIES, WIND_START),   # 已用 SUITED_END
+    ]
+    # 簡化：直接按花色邊界切分
+    suit_ranges = [
+        (0, 4 * TILES_PER_SUIT),
+        (4 * TILES_PER_SUIT, 2 * 4 * TILES_PER_SUIT),
+        (2 * 4 * TILES_PER_SUIT, 3 * 4 * TILES_PER_SUIT),
+    ]
+    i = 0
+    for suit_idx, (lo, hi) in enumerate(suit_ranges):
+        j = i
+        while i < len(hand17) and hand17[i] < hi:
+            suited[hand17[i] // COPIES] += 1
+            i += 1
+        segment = hand17[j:i]
+        for ci in _find_suit_pairs(segment):
+            if _find_i_pair(segment, ci):
+                pairs.append(j + ci)
+
+    # 字牌
+    j = i
+    while i < len(hand17):
+        kind = hand17[i] // COPIES
+        honor[kind - SUITED_KINDS] += 1
+        i += 1
+    for ci in range(j, len(hand17)):
+        if _find_i_pair(hand17, ci):
+            pairs.append(ci)
+
+    return suited, honor, pairs
+
+
+def is_win(hand: list[int], extra: int) -> bool:
+    """判斷 16 張手牌加上 1 張摸入牌是否構成胡牌。
+
+    胡牌條件：17 張 = 1 對將牌 + 5 組面子（刻子或順子）。
+    先以 find_pair 找候選將牌，再對每個候選：
+    - 去掉 2 張將牌後，以 is_honor + is_suit 驗證剩餘 15 張
+
+    Args:
+        hand:  長度 16 的手牌列表
+        extra: 摸入的第 17 張牌號
+
+    Returns:
+        構成胡牌回傳 True，否則 False
+    """
+    all17 = sorted(hand + [extra])
+    suited, honor, pair_indices = find_pair(all17)
+
+    seen_kinds: set[int] = set()
+    for idx in pair_indices:
+        kind = all17[idx] // COPIES
+        if kind in seen_kinds:
+            continue
+        seen_kinds.add(kind)
+
+        if kind < SUITED_KINDS:     # 數牌將
+            suited[kind] -= 2
+            if is_honor(honor) and is_suit(suited):
+                return True
+            suited[kind] += 2
+        else:                       # 字牌將
+            honor_idx = kind - SUITED_KINDS
+            honor[honor_idx] -= 2
+            if is_honor(honor) and is_suit(suited):
+                return True
+            honor[honor_idx] += 2
+
+    return False
+
+
+# ---------------------------------------------------------------------------
 # 快速驗收（執行此模組時顯示）
 # ---------------------------------------------------------------------------
 
@@ -259,3 +446,21 @@ if __name__ == "__main__":
         total_seen = sum(p.seen)
         assert total_seen == 16, f"玩家 {i} seen 合計應為 16，實際 {total_seen}"
     print("  ✓ show_bonus() 後 seen 正確初始化（合計 16）")
+
+    print("\n--- 胡牌判定驗收 ---")
+    # 已知胡牌手牌：1-9筒各一對 + 1-9索各一 → 不是標準胡型，改用明確手牌
+    # 胡牌範例：五組順子 1-2-3筒 × 5 + 一對東風
+    win_hand = (
+        [0, 4, 8] * 5   # 1筒、2筒、3筒 × 5組（各取第一張副本）
+        + [108, 109]     # 東東（一對）
+    )
+    # 取前16張為手牌，最後1張為摸入
+    win_hand16 = win_hand[:16]
+    win_extra  = win_hand[16]
+    assert is_win(win_hand16, win_extra), "已知胡牌手牌應回傳 True"
+    print("  ✓ 已知胡牌手牌回傳 True")
+
+    # 未胡範例：17 張全不同花色散牌（1–9筒各1 + 1–8索各1）
+    no_win_hand = list(range(0, 36, 4)) + list(range(36, 68, 4))  # 9+8=17 張
+    assert not is_win(no_win_hand[:16], no_win_hand[16]), "未胡手牌應回傳 False"
+    print("  ✓ 未胡手牌回傳 False")
