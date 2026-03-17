@@ -9,12 +9,13 @@
 
 ## 任務清單
 
-### 1. [/] 建立牌面常數與編碼函式
+### 1. [v] 建立牌面常數與編碼函式
 - **檔案範圍**：`mahjong.py`（新建，僅此區段）
 - **摘要**：用具名常數取代魔術數字（如 `SUIT_COUNT = 3*9*4`），並實作 `n_to_chinese(n)` 函式
 - **驗收**：可呼叫 `n_to_chinese(0)` 回傳 `"1筒"`，`n_to_chinese(136)` 回傳 `"春"`
+- Commit `4f77eca`：feat(mahjong-py): 新增 Python 重構任務規劃與牌面常數模組
 
-### 2. [ ] 重構資料結構（Player / Mahjong 類別拆分）
+### 2. [/] 重構資料結構（Player / Mahjong 類別拆分）
 - **檔案範圍**：`mahjong.py`
 - **摘要**：原版 `Player` 混合遊戲狀態與 AI 資料，拆成 `PlayerState`（手牌/花牌/見牌統計）與 `AIContext`（聽牌/出牌機率），`Mahjong` 僅保留遊戲狀態
 - **驗收**：兩個類別可各自初始化且欄位名稱語意明確

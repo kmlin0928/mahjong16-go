@@ -1,3 +1,4 @@
+from __future__ import annotations
 # mahjong.py — 16 張麻將模擬器（Python 重構版）
 # 原始實作：mahjong.go（Go 語言）
 
@@ -66,6 +67,75 @@ def n_to_chinese(n: int) -> str:
 
 
 # ---------------------------------------------------------------------------
+# 資料結構
+# ---------------------------------------------------------------------------
+
+from dataclasses import dataclass, field
+
+
+@dataclass
+class PlayerState:
+    """單一玩家的遊戲狀態。
+
+    Attributes:
+        hand: 手牌列表，長度為 n_hand（不含剛摸入的牌）
+        table: 已亮出的花牌列表
+        seen: 索引為牌面種類（tile // COPIES），記錄各牌面已出現張數
+    """
+    n_hand: int
+    hand: list[int] = field(default_factory=list)
+    table: list[int] = field(default_factory=list)
+    seen: list[int] = field(default_factory=lambda: [0] * (SUITED_KINDS + HONOR_KINDS))
+
+    def add_seen(self, tile: int) -> None:
+        """記錄某張牌已出現（包含自己摸到或他人打出）。
+
+        Args:
+            tile: 牌號整數
+        """
+        kind = tile // COPIES
+        if kind < len(self.seen):
+            self.seen[kind] += 1
+
+
+@dataclass
+class AIContext:
+    """AI 決策所需的輔助資料，與遊戲狀態分離。
+
+    Attributes:
+        gates: 打出某張牌後的聽牌候選，key 為牌號，value 為聽牌數
+        play_freq: 各手牌位置的「已出現張數」（出現越多代表越容易打掉）
+    """
+    gates: dict[int, int] = field(default_factory=dict)
+    play_freq: dict[int, int] = field(default_factory=dict)
+
+
+@dataclass
+class Mahjong:
+    """麻將遊戲狀態，管理牌堆與四位玩家。
+
+    Attributes:
+        n_hand: 每位玩家起始手牌數（預設 16）
+        remain: 剩餘待摸牌堆
+        sea: 棄牌海底（所有玩家打出的牌）
+        players: 四位玩家的遊戲狀態
+        ai: 四位玩家的 AI 決策資料
+    """
+    n_hand: int = 16
+    remain: list[int] = field(default_factory=list)
+    sea: list[int] = field(default_factory=list)
+    players: list[PlayerState] = field(default_factory=list)
+    ai: list[AIContext] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        """初始化四位玩家的狀態與 AI 資料。"""
+        if not self.players:
+            self.players = [PlayerState(n_hand=self.n_hand) for _ in range(4)]
+        if not self.ai:
+            self.ai = [AIContext() for _ in range(4)]
+
+
+# ---------------------------------------------------------------------------
 # 快速驗收（執行此模組時顯示）
 # ---------------------------------------------------------------------------
 
@@ -94,3 +164,20 @@ if __name__ == "__main__":
         print(f"  {status} n_to_chinese({tile_id:3d}) = {result!r:6s}  (預期 {expected!r})")
     print()
     print("全部通過 ✓" if all_pass else "有測試失敗 ✗")
+
+    print("\n--- 資料結構驗收 ---")
+    m = Mahjong(n_hand=16)
+    assert len(m.players) == 4, "玩家數應為 4"
+    assert len(m.ai) == 4, "AI 資料數應為 4"
+    for p in m.players:
+        assert p.n_hand == 16
+        assert p.hand == []
+        assert p.table == []
+        assert len(p.seen) == SUITED_KINDS + HONOR_KINDS
+    p0 = m.players[0]
+    p0.add_seen(0)
+    assert p0.seen[0] == 1, "add_seen 應更新 seen[0]"
+    print("  ✓ PlayerState 初始化正確")
+    print("  ✓ AIContext 初始化正確")
+    print("  ✓ Mahjong.__post_init__ 正確建立四位玩家")
+    print("  ✓ add_seen() 運作正常")
