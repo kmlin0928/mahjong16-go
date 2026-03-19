@@ -16,13 +16,14 @@
 - **驗收**：`PlayerState` 有 `discards` 欄位且初始為空列表
 - Commit `2511efc`：refactor(mahjong-py): 新增 PlayerState.discards 個人棄牌紀錄
 
-### 2. [/] 更新遊戲主迴圈的棄牌寫入
+### 2. [v] 更新遊戲主迴圈的棄牌寫入
 - **檔案範圍**：`mahjong.py`（`main()` 函式）
 - **摘要**：打牌時由 `m.sea.append(tile)` 改為 `p.discards.append(tile)`，
   移除或保留 `m.sea` 作為可選的完整紀錄（供顯示或演算法使用）
 - **驗收**：一局跑完後，四位玩家 `discards` 長度之和等於總打出牌數
+- Commit `8f6b439`：feat(mahjong-py): 主迴圈改用 p.discards 記錄個人棄牌
 
-### 3. [ ] 新增 AI 放槍預防的資料查詢介面
+### 3. [/] 新增 AI 放槍預防的資料查詢介面
 - **檔案範圍**：`mahjong.py`（新增獨立函式）
 - **摘要**：新增 `get_dangerous_tiles(players, target_idx)` 函式，
   從其他三家的 `discards` 統計各牌面的出現頻率，

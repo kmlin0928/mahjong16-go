@@ -494,6 +494,36 @@ def decide_play(p: PlayerState, ai: AIContext) -> int:
 
 
 # ---------------------------------------------------------------------------
+# AI 放槍預防輔助函式
+# ---------------------------------------------------------------------------
+
+def get_dangerous_tiles(players: list[PlayerState], target_idx: int) -> dict[int, int]:
+    """統計其他三家打出牌的牌面頻率，供 AI 評估放槍風險。
+
+    當某牌面在他家棄牌中出現越多次，代表該牌已被多人打出，
+    對手持有該牌聽牌的機率相對較低（安全牌傾向）；
+    反之出現次數少，放槍風險較高。
+
+    未來可結合 seen 與 gates 演算法，實作「避免打出危險牌」的 AI 策略。
+
+    Args:
+        players:    四位玩家的狀態列表
+        target_idx: 欲查詢的玩家索引（0–3），該玩家自身的棄牌不計入
+
+    Returns:
+        dict[牌面種類索引, 出現次數]，僅包含出現次數 > 0 的牌面
+    """
+    freq: dict[int, int] = {}
+    for i, p in enumerate(players):
+        if i == target_idx:
+            continue
+        for tile in p.discards:
+            kind = tile // COPIES
+            freq[kind] = freq.get(kind, 0) + 1
+    return freq
+
+
+# ---------------------------------------------------------------------------
 # 快速驗收（執行此模組時顯示）
 # ---------------------------------------------------------------------------
 
@@ -613,6 +643,30 @@ if __name__ == "__main__":
     assert len(sea) == 4, f"sea 聚合長度應為 4，實際 {len(sea)}"
     assert sea == [0, 4, 8, 12], f"sea 應依玩家順序交錯，實際 {sea}"
     print("  ✓ discards 長度之和與 sea 聚合正確")
+
+    print("\n--- 放槍預防查詢驗收 ---")
+    p0 = PlayerState(n_hand=16)
+    p1 = PlayerState(n_hand=16)
+    p2 = PlayerState(n_hand=16)
+    p3 = PlayerState(n_hand=16)
+    # 玩家0打出：1筒(0)、2筒(4)
+    p0.discards = [0, 4]
+    # 玩家1打出：1筒(0)、東(108)
+    p1.discards = [0, 108]
+    # 玩家2打出：3筒(8)
+    p2.discards = [8]
+    # 玩家3（目標，棄牌不計入）打出：9筒(32)
+    p3.discards = [32]
+    players_test = [p0, p1, p2, p3]
+
+    danger = get_dangerous_tiles(players_test, target_idx=3)
+    assert danger.get(0) == 2, f"牌面0(1筒)應出現2次，實際 {danger.get(0)}"
+    assert danger.get(1) == 1, f"牌面1(2筒)應出現1次，實際 {danger.get(1)}"
+    assert danger.get(2) == 1, f"牌面2(3筒)應出現1次，實際 {danger.get(2)}"
+    assert danger.get(27) == 1, f"牌面27(東)應出現1次，實際 {danger.get(27)}"
+    assert 8 not in danger, "玩家3(target)的棄牌不應計入"
+    print("  ✓ get_dangerous_tiles() 正確統計其他三家棄牌頻率")
+    print("  ✓ target_idx 玩家自身棄牌不計入")
 
 
 def main() -> None:
