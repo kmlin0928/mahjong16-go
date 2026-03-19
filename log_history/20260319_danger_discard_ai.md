@@ -57,7 +57,7 @@
 - **驗收**：README 說明清楚，`uv run mahjong.py` 無誤
 - `bc2b791` docs: README 更新 Python AI 三階段棄牌策略與「拆牌」定義
 
-### 6. [ ] `__main__` 驗收測試：`danger_discard_index` 情境測試
+### 6. [v] `__main__` 驗收測試：`danger_discard_index` 情境測試
 
 - **檔案範圍**：`mahjong.py`（`__main__` 測試區塊末尾）
 - **摘要**：
