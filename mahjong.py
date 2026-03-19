@@ -95,12 +95,18 @@ class DangerLevel(IntEnum):
     VERY_DANGEROUS (4) — 很危險
         - 數牌，從未出現在任何人的棄牌中
         - 未來擴充：也未被下一家吃、其他三家碰/槓
+
+    EXTREMELY_DANGEROUS (5) — 極度危險（湊牌中）
+        - 數牌，經 find_hand_chows() 偵測，屬於手牌中正在組成順子的牌面
+        - 此類牌若棄出，會破壞自身順子組合，不應棄出
+        - 未來整合至 AI 棄牌策略：decide_play() 應跳過此等級的牌
     """
-    EXTREMELY_SAFE  = 0
-    VERY_SAFE       = 1
-    SAFE            = 2
-    DANGEROUS       = 3
-    VERY_DANGEROUS  = 4
+    EXTREMELY_SAFE      = 0
+    VERY_SAFE           = 1
+    SAFE                = 2
+    DANGEROUS           = 3
+    VERY_DANGEROUS      = 4
+    EXTREMELY_DANGEROUS = 5   # 湊牌中，屬於順子組成的牌，不應棄出
 
 
 # ---------------------------------------------------------------------------
@@ -261,6 +267,73 @@ def is_honor(honor: list[int]) -> bool:
     return all(c == 0 or c == 3 for c in honor)
 
 
+def _decompose_suited(
+    s: list[int], chows: list[tuple[int, int, int]]
+) -> bool:
+    """遞迴分解數牌，將找到的順子 (i, i+1, i+2) 附加至 chows。
+
+    從最小牌面開始，遇到 >= 3 張先消刻子後遞迴（刻子不記錄）；
+    遇到 1–2 張嘗試消順子後遞迴（順子記錄至 chows）；
+    負數或無法消則回傳 False。
+
+    Args:
+        s:     長度 SUITED_KINDS（27）的列表副本，索引為牌面種類，值為張數
+        chows: 累積順子列表，每個順子以 (i, i+1, i+2) tuple 表示
+
+    Returns:
+        可完整分解回傳 True，否則 False
+    """
+    for suit in range(SUIT_COUNT):
+        base = suit * TILES_PER_SUIT
+        for offset in range(TILES_PER_SUIT):
+            i = base + offset
+            n = s[i]
+            if n < 0:
+                return False
+            if n == 0:
+                continue
+            if n >= 3:
+                s[i] -= 3
+                return _decompose_suited(s, chows)      # 刻子：不記錄
+            # n == 1 or 2：必須組成順子
+            if offset + 2 >= TILES_PER_SUIT or s[i + 1] < 1 or s[i + 2] < 1:
+                return False
+            s[i] -= 1; s[i + 1] -= 1; s[i + 2] -= 1
+            chows.append((i, i + 1, i + 2))
+            return _decompose_suited(s, chows)          # 順子：記錄
+    return True
+
+
+def find_hand_chows(suited: list[int]) -> list[tuple[int, int, int]] | None:
+    """找出手牌數牌中所有順子的牌面種類組合（貪婪分解）。
+
+    Args:
+        suited: 長度 SUITED_KINDS（27）的列表，索引為牌面種類，值為張數
+
+    Returns:
+        可完整分解時回傳順子列表（每個順子為三個牌面種類索引 tuple），
+        無法完整分解則回傳 None。
+    """
+    chows: list[tuple[int, int, int]] = []
+    if _decompose_suited(suited[:], chows):
+        return chows
+    return None
+
+
+def find_hand_pungs(suited: list[int]) -> list[tuple[int, int]]:
+    """找出手牌數牌中的刻子候選（同牌面種類張數 >= 2）。
+
+    刻子已成（3 張）或刻子半成（2 張）皆屬湊牌中，標記為 EXTREMELY_DANGEROUS。
+
+    Args:
+        suited: 長度 SUITED_KINDS（27）的列表，索引為牌面種類，值為張數
+
+    Returns:
+        list of (kind_idx, count)，count 為 2（刻子半成）或 3（刻子已成）
+    """
+    return [(i, c) for i, c in enumerate(suited) if c >= 2]
+
+
 def is_suit(suited: list[int]) -> bool:
     """Theorem 1：以貪婪遞迴判斷數牌是否可完整分解為刻子或順子。
 
@@ -275,27 +348,7 @@ def is_suit(suited: list[int]) -> bool:
     Returns:
         可完整分解回傳 True，否則 False
     """
-    s = suited[:]
-    for suit in range(SUIT_COUNT):
-        base = suit * TILES_PER_SUIT
-        for offset in range(TILES_PER_SUIT):
-            i = base + offset
-            n = s[i]
-            if n < 0:
-                return False
-            if n == 0:
-                continue
-            if n >= 3:
-                s[i] -= 3
-                return is_suit(s)   # 遞迴：從頭再掃
-            # n == 1 or 2：必須組成順子
-            if offset + 2 >= TILES_PER_SUIT or s[i + 1] < 1 or s[i + 2] < 1:
-                return False
-            s[i] -= 1
-            s[i + 1] -= 1
-            s[i + 2] -= 1
-            return is_suit(s)       # 遞迴：從頭再掃
-    return True
+    return _decompose_suited(suited[:], [])
 
 
 def _find_i_pair(s: list[int], i: int) -> bool:
@@ -858,6 +911,45 @@ if __name__ == "__main__":
     # 等級比較正確
     assert DangerLevel.EXTREMELY_SAFE < DangerLevel.VERY_SAFE < DangerLevel.SAFE
     print("  ✓ EXTREMELY_SAFE < VERY_SAFE < SAFE 比較正確")
+
+    print("\n--- find_hand_chows 驗收 ---")
+    # 1. 純順子手牌：1-2-3筒各 × 2 張（共 6 張）→ 2 組順子，無刻子
+    #    注意：各花色同點數 ≥ 3 張時貪婪演算法先消刻子，故用 2 張強制走順子路徑
+    _chow_s1 = [0] * SUITED_KINDS
+    _chow_s1[0] = 2; _chow_s1[1] = 2; _chow_s1[2] = 2   # 1筒×2, 2筒×2, 3筒×2
+    _r1 = find_hand_chows(_chow_s1)
+    assert _r1 is not None, "純順子應可分解"
+    assert len(_r1) == 2, f"應有 2 組順子，實際 {len(_r1)}"
+    assert all(t == (0, 1, 2) for t in _r1), f"順子應為 (0,1,2)，實際 {_r1}"
+    print(f"  ✓ 純順子(1-2-3筒×2) → {len(_r1)} 組順子 {_r1}")
+
+    # 2. 純刻子手牌：1筒×3 + 2筒×3 → 回傳空列表（無順子）
+    _chow_s2 = [0] * SUITED_KINDS
+    _chow_s2[0] = 3; _chow_s2[1] = 3
+    _r2 = find_hand_chows(_chow_s2)
+    assert _r2 == [], f"純刻子應回傳空列表，實際 {_r2}"
+    print(f"  ✓ 純刻子(1筒×3, 2筒×3) → 空列表 {_r2}")
+
+    # 3. 刻子混順子：1筒×3（刻子）+ 4-5-6筒各×1（順子）
+    _chow_s3 = [0] * SUITED_KINDS
+    _chow_s3[0] = 3   # 1筒×3 → 刻子
+    _chow_s3[3] = 1; _chow_s3[4] = 1; _chow_s3[5] = 1   # 4-5-6筒 → 順子
+    _r3 = find_hand_chows(_chow_s3)
+    assert _r3 is not None, "混合手牌應可分解"
+    assert len(_r3) == 1, f"應有 1 組順子，實際 {len(_r3)}"
+    assert _r3[0] == (3, 4, 5), f"順子應為 (3,4,5)，實際 {_r3[0]}"
+    print(f"  ✓ 刻子混順子 → {len(_r3)} 組順子 {_r3}")
+
+    # 4. 無法分解的手牌：1筒×1（孤張）→ 回傳 None
+    _chow_s4 = [0] * SUITED_KINDS
+    _chow_s4[0] = 1
+    _r4 = find_hand_chows(_chow_s4)
+    assert _r4 is None, f"無法分解應回傳 None，實際 {_r4}"
+    print(f"  ✓ 無法分解(1筒×1孤張) → None")
+
+    # 5. EXTREMELY_DANGEROUS > VERY_DANGEROUS 比較正確
+    assert DangerLevel.EXTREMELY_DANGEROUS > DangerLevel.VERY_DANGEROUS
+    print(f"  ✓ EXTREMELY_DANGEROUS > VERY_DANGEROUS 比較正確")
 
 
 def main() -> None:
