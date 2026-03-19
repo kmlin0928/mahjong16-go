@@ -39,7 +39,7 @@
 - **驗收**：`uv run mahjong.py` 執行結果與重構前相同；程式碼行數減少
 - `af96017` refactor(mahjong-py): 抽出 _do_meld 輔助函式，統一吃/碰/槓執行邏輯
 
-### 4. [/] 整合測試 — 固定 seed 執行一局並驗證關鍵輸出格式
+### 4. [v] 整合測試 — 固定 seed 執行一局並驗證關鍵輸出格式
 
 - **檔案範圍**：`mahjong.py`（`__main__` 測試區塊末尾）
 - **摘要**：
@@ -48,6 +48,7 @@
     若有吃/碰/槓，對應標注存在且手牌數合理
   - 採用 `io.StringIO` + `contextlib.redirect_stdout` 捕捉輸出
 - **驗收**：assert 通過，測試執行時間 < 5 秒
+- `f51655d` feat(mahjong-py): 整合測試、RUN_TESTS/PAUSE_ON_MELD 常數、修正補花失敗 bug
 
 ---
 
