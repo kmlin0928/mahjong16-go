@@ -76,10 +76,13 @@ class DangerLevel(IntEnum):
 
     等級定義：
 
+    EXTREMELY_SAFE (0) — 極度安全
+        - 數牌或字牌，全局棄牌中同牌面已出現 4 次（四張全出，不可能放槍）
+        - 曾被吃（chi_tiles）、碰（pon_tiles）或槓（kong_tiles）的牌面
+
     VERY_SAFE (1) — 很安全
         - 花牌（BONUS_START 以上）
         - 全局棄牌中同牌面出現 ≥ 2 次（大量已見，對手持有機率低）
-        - 未來擴充：曾被吃、碰、槓的牌面
 
     SAFE (2) — 安全
         - 字牌（風牌、三元牌）：無順子可能，威脅範圍有限
@@ -93,6 +96,7 @@ class DangerLevel(IntEnum):
         - 數牌，從未出現在任何人的棄牌中
         - 未來擴充：也未被下一家吃、其他三家碰/槓
     """
+    EXTREMELY_SAFE  = 0
     VERY_SAFE       = 1
     SAFE            = 2
     DANGEROUS       = 3
@@ -596,10 +600,6 @@ def classify_danger(
     """
     kind = tile // COPIES
 
-    # 花牌：很安全
-    if tile >= BONUS_START:
-        return DangerLevel.VERY_SAFE
-
     # 蒐集全局棄牌（依輪次交錯順序）
     all_discards: list[int] = []
     max_len = max((len(p.discards) for p in players), default=0)
@@ -608,7 +608,7 @@ def classify_danger(
             if i < len(p.discards):
                 all_discards.append(p.discards[i])
 
-    # 預留：吃/碰/槓牌面（目前不使用）
+    # 吃/碰/槓牌面集合
     _chi  = chi_tiles  or []
     _pon  = pon_tiles  or []
     _kong = kong_tiles or []
@@ -617,8 +617,17 @@ def classify_danger(
     # 全局出現次數
     global_count = sum(1 for t in all_discards if t // COPIES == kind)
 
-    # 很安全：全局出現 ≥ 2 次，或曾被吃/碰/槓
-    if global_count >= 2 or kind in meld_kinds:
+    # 極度安全：數牌或字牌，四張全已出現（不可能放槍），或曾被吃/碰/槓
+    # 花牌每種只有 1 張，不適用此條件
+    if tile < BONUS_START and (global_count >= COPIES or kind in meld_kinds):
+        return DangerLevel.EXTREMELY_SAFE
+
+    # 花牌：很安全
+    if tile >= BONUS_START:
+        return DangerLevel.VERY_SAFE
+
+    # 很安全：全局出現 ≥ 2 次
+    if global_count >= 2:
         return DangerLevel.VERY_SAFE
 
     # 字牌：安全
@@ -826,6 +835,29 @@ if __name__ == "__main__":
     _dp5 = [PlayerState(n_hand=16) for _ in range(4)]
     assert classify_danger(8, _dp5) == DangerLevel.VERY_DANGEROUS
     print(f"  ✓ 3筒從未出現 → {classify_danger(8, _dp5).name}")
+
+    # 極度安全：數牌四張全棄
+    _dp6 = [PlayerState(n_hand=16) for _ in range(4)]
+    for i in range(4):
+        _dp6[i].discards = [0]   # 1筒各出現 1 次，共 4 次
+    assert classify_danger(0, _dp6) == DangerLevel.EXTREMELY_SAFE
+    print(f"  ✓ 1筒四張全棄 → {classify_danger(0, _dp6).name}")
+
+    # 極度安全：字牌四張全棄
+    _dp7 = [PlayerState(n_hand=16) for _ in range(4)]
+    for i in range(4):
+        _dp7[i].discards = [108]   # 東各出現 1 次，共 4 次
+    assert classify_danger(108, _dp7) == DangerLevel.EXTREMELY_SAFE
+    print(f"  ✓ 東四張全棄 → {classify_danger(108, _dp7).name}")
+
+    # 花牌最多只到 VERY_SAFE（無法達到 EXTREMELY_SAFE）
+    _dp8 = [PlayerState(n_hand=16) for _ in range(4)]
+    assert classify_danger(136, _dp8) == DangerLevel.VERY_SAFE
+    print(f"  ✓ 花牌(春)不適用極度安全 → {classify_danger(136, _dp8).name}")
+
+    # 等級比較正確
+    assert DangerLevel.EXTREMELY_SAFE < DangerLevel.VERY_SAFE < DangerLevel.SAFE
+    print("  ✓ EXTREMELY_SAFE < VERY_SAFE < SAFE 比較正確")
 
 
 def main() -> None:
