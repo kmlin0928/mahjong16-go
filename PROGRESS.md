@@ -18,7 +18,7 @@
 - **驗收**：前吃/夾吃/後吃三情境均正確，無法吃回傳 None
 - `d4ed167` feat(mahjong-py): 新增 can_chi 偵測手牌可吃棄牌的順子配對
 
-### 2. [ ] 新增 `chi_count` 至 `PlayerState`，新增 `is_win_ext`
+### 2. [v] 新增 `chi_count` 至 `PlayerState`，新增 `is_win_ext`
 
 - **檔案範圍**：`mahjong.py`（`PlayerState` dataclass；`is_win` 正下方）
 - **摘要**：
@@ -26,6 +26,7 @@
   - 新增 `is_win_ext(hand, extra, meld_count)` — 計入桌面已成面子後的胡牌判定
     （hand + extra = (5 - meld_count) 面子 + 1 將牌）
 - **驗收**：`is_win_ext(hand13, extra, 1)` 在正確情境下回傳 True
+- `0657f70` feat(mahjong-py): 新增 chi_count 欄位與 is_win_ext 胡牌判定
 
 ### 3. [ ] 更新主迴圈 — 棄牌後自動吃牌，支援吃牌後直接棄牌
 

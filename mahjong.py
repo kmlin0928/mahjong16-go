@@ -635,7 +635,7 @@ def calculate_gates(m: Mahjong, p: PlayerState, ai: AIContext) -> None:
     ai.gates = {}
     ai.play_freq = {}
 
-    total = p.n_hand + 1        # 含摸入牌
+    total = len(p.hand)         # 含摸入牌（吃牌輪次手牌較少，用實際長度）
     hand = p.hand               # 長度 total
 
     # 統計手牌各牌面種類的出現次數（數牌 + 字牌，忽略花牌）
@@ -1238,8 +1238,11 @@ def main() -> None:
 
     流程：
     1. 初始化並發牌、補花
-    2. 四人輪流：摸牌 → 補花 → 判胡 → AI 計算 → 打牌 → 通知其他家記牌
-    3. 胡牌或牌堆耗盡則結束
+    2. 四人輪流：
+       - 正常輪次：摸牌 → 補花 → 判胡 → AI 計算 → 打牌
+       - 吃牌輪次：跳過摸牌（skip_draw=True）→ AI 計算 → 打牌
+    3. 棄牌後檢查下一家是否自動吃牌，若可吃則移至桌面並設 skip_draw
+    4. 胡牌或牌堆耗盡則結束
     """
     m = Mahjong(n_hand=16)
     m.init_deal()
@@ -1247,29 +1250,35 @@ def main() -> None:
     print()
 
     player = 0
+    skip_draw = False   # 吃牌後下一輪跳過摸牌
     while m.remain:
         p = m.players[player]
         ai = m.ai[player]
 
-        # 摸牌
-        drawn = m.deal_one()
-        print(f"\n{player}摸 {n_to_chinese(drawn)}", end="")
-        p.hand.append(drawn)
-        m._draw_bonus(p, len(p.hand) - 1)
-        drawn = p.hand[-1]      # 補花後的實際摸入牌
-        p.add_seen(drawn)
+        if not skip_draw:
+            # 正常輪次：摸牌
+            drawn = m.deal_one()
+            print(f"\n{player}摸 {n_to_chinese(drawn)}", end="")
+            p.hand.append(drawn)
+            m._draw_bonus(p, len(p.hand) - 1)
+            drawn = p.hand[-1]      # 補花後的實際摸入牌
+            p.add_seen(drawn)
 
-        # 判胡（摸牌後立即判斷）
-        if is_win(p.hand[:-1], drawn):
-            print(f"\n{player}胡", end="")
-            for t in p.hand[:-1]:
-                print(f" {n_to_chinese(t)}", end="")
-            print()
-            return
+            # 判胡（摸牌後立即判斷，含桌面已成面子）
+            if is_win_ext(p.hand[:-1], drawn, p.chi_count):
+                print(f"\n{player}胡", end="")
+                for t in p.hand[:-1]:
+                    print(f" {n_to_chinese(t)}", end="")
+                print()
+                return
 
-        # 牌堆若已空（補花後耗盡），宣告和局
-        if not m.remain:
-            break
+            # 牌堆若已空（補花後耗盡），宣告和局
+            if not m.remain:
+                break
+        else:
+            # 吃牌輪次：跳過摸牌，直接進入出牌
+            skip_draw = False
+            print(f"\n{player}吃後出牌", end="")
 
         # AI 計算聽牌與出牌
         calculate_gates(m, p, ai)
@@ -1279,7 +1288,7 @@ def main() -> None:
 
         # 決定出牌（傳入 players 啟用 DangerLevel 策略）
         discard_idx, discard_level = decide_play(p, ai, m.players)  # type: ignore[misc]
-        # 將摸入牌換入打出位置（維持 hand 長度 = n_hand）
+        # 將摸入牌換入打出位置（維持 hand 長度 = n_hand - chi_count*2）
         discard_tile = p.hand[discard_idx]
         p.hand[discard_idx] = p.hand[-1]
         p.hand.pop()
@@ -1293,12 +1302,31 @@ def main() -> None:
             for t in p.table:
                 print(f"|{n_to_chinese(t)}", end="")
 
-        # 棄牌記入該玩家個人棄牌紀錄，其他三家記牌
+        # 棄牌記入各家記牌
         p.discards.append(discard_tile)
         for other in range(1, 4):
             m.players[(player + other) % 4].add_seen(discard_tile)
 
-        player = (player + 1) % 4
+        # 檢查下一家是否自動吃牌（僅限數牌）
+        next_idx = (player + 1) % 4
+        np = m.players[next_idx]
+        chi_pair = can_chi(np.hand, discard_tile) if discard_tile < SUITED_END else None
+        if chi_pair is not None:
+            ta, tb = chi_pair
+            np.hand.remove(ta)
+            np.hand.remove(tb)
+            np.table.extend([ta, tb, discard_tile])
+            np.chi_count += 1
+            p.discards.pop()    # 棄牌被吃走，移出海底
+            print(
+                f"\n  {next_idx}吃 {n_to_chinese(discard_tile)}"
+                f"（{n_to_chinese(ta)} {n_to_chinese(tb)}）",
+                end="",
+            )
+            skip_draw = True
+            player = next_idx
+        else:
+            player = (player + 1) % 4
 
     print("\n和局")
 
