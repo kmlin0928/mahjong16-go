@@ -29,7 +29,7 @@
 - **驗收**：`PlayerState` 建立後 `pon_count == 0`
 - `c49b0f7` feat(mahjong-py): 新增 pon_count 欄位至 PlayerState
 
-### 3. [/] 更新主迴圈 — 棄牌後優先碰牌，碰牌後直接棄牌
+### 3. [v] 更新主迴圈 — 棄牌後優先碰牌，碰牌後直接棄牌
 
 - **檔案範圍**：`mahjong.py`（`main()` 函式，現有 chi 判斷邏輯附近）
 - **摘要**：
@@ -41,8 +41,9 @@
   - Win check：`pon_count > 0` 的玩家已有 `chi_count`，改用 `is_win_ext(hand, extra, chi_count + pon_count)`
   - 顯示：`N碰 X（A B）` 標注
 - **驗收**：遊戲執行時偶有「碰」標注，碰牌方手牌數正確，碰後直接棄牌
+- `45f11fe` feat(mahjong-py): 主迴圈加入自動碰牌機制
 
-### 4. [ ] README 更新碰牌機制說明
+### 4. [/] README 更新碰牌機制說明
 
 - **檔案範圍**：`README.md`
 - **摘要**：
