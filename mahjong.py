@@ -351,6 +351,39 @@ def find_hand_pairs(honor: list[int]) -> list[int]:
     return [i for i, c in enumerate(honor) if c >= 2]
 
 
+def _get_meld_kinds(hand17: list[int]) -> set[int]:
+    """回傳 hand17 中屬於湊牌組合的全局牌面種類索引集合。
+
+    - 數牌順子（find_hand_chows）中的牌面種類
+    - 數牌刻子/槓子（find_hand_pungs）中的牌面種類
+    - 字牌對子以上（find_hand_pairs）中的牌面種類（以 SUITED_KINDS 為偏移量）
+
+    Args:
+        hand17: 含摸入牌的 17 張牌號列表
+
+    Returns:
+        湊牌牌面種類索引集合（全局索引，字牌已加 SUITED_KINDS 偏移）
+    """
+    suited = [0] * SUITED_KINDS
+    honor  = [0] * HONOR_KINDS
+    for tile in hand17:
+        if tile < SUITED_END:
+            suited[tile // COPIES] += 1
+        elif tile < BONUS_START:
+            honor[(tile - SUITED_END) // COPIES] += 1
+
+    kinds: set[int] = set()
+    chows = find_hand_chows(suited)
+    if chows:
+        for c in chows:
+            kinds.update(c)
+    for kind_idx, _ in find_hand_pungs(suited):
+        kinds.add(kind_idx)
+    for honor_idx in find_hand_pairs(honor):
+        kinds.add(SUITED_KINDS + honor_idx)
+    return kinds
+
+
 def is_suit(suited: list[int]) -> bool:
     """Theorem 1：以貪婪遞迴判斷數牌是否可完整分解為刻子或順子。
 
