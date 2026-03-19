@@ -30,7 +30,7 @@
 - **驗收**：`PlayerState` 建立後 `kong_count == 0`；`AI_AUTO_KONG` 預設 `False`
 - `ea649d6` feat(mahjong-py): 新增 kong_count 欄位與 AI_AUTO_KONG 常數
 
-### 3. [/] 更新主迴圈 — 棄牌後明槓優先於碰，槓後正常摸牌
+### 3. [v] 更新主迴圈 — 棄牌後明槓優先於碰，槓後正常摸牌
 
 - **檔案範圍**：`mahjong.py`（`main()` 函式，現有碰牌判斷邏輯之前）
 - **摘要**：
@@ -42,8 +42,9 @@
   - win check 呼叫端改為 `p.chi_count + p.pon_count + p.kong_count`
   - 顯示：`N槓 X（A B C）` 標注
 - **驗收**：`AI_AUTO_KONG = True` 時遊戲出現「槓」標注，槓後玩家手牌數正確（移除 3 張）且正常摸牌
+- `d9bcbb3` feat(mahjong-py): 主迴圈加入明槓機制（AI_AUTO_KONG 控制）
 
-### 4. [ ] README 更新明槓機制說明
+### 4. [/] README 更新明槓機制說明
 
 - **檔案範圍**：`README.md`
 - **摘要**：
