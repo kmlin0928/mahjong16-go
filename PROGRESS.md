@@ -42,15 +42,16 @@
 - **驗收**：遊戲執行時偶有「吃」標注，手牌數正確
 - `bfbb670` feat(mahjong-py): 主迴圈加入自動吃牌機制
 
-### 4. [ ] README 更新吃牌機制說明
+### 4. [v] README 更新吃牌機制說明
 
 - **檔案範圍**：`README.md`
 - **摘要**：
   - AI 策略區塊補充「自動吃牌」說明、`can_chi` 介紹、桌面面子記錄方式
   - 說明未來擴充：chi_ai 決策函式（目前固定自動吃）
 - **驗收**：README 清楚描述吃牌流程
+- `e0b9f1a` docs: README 新增吃牌機制說明（can_chi、流程、is_win_ext）
 
-### 5. [ ] `__main__` 驗收測試：`can_chi` 與 `is_win_ext`
+### 5. [/] `__main__` 驗收測試：`can_chi` 與 `is_win_ext`
 
 - **檔案範圍**：`mahjong.py`（`__main__` 測試區塊末尾）
 - **摘要**：

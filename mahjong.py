@@ -1232,6 +1232,51 @@ if __name__ == "__main__":
     assert _lv4 == DangerLevel.EXTREMELY_DANGEROUS, f"全湊牌應為拆牌，實際 {_lv4.name}"
     print(f"  ✓ 全湊牌拆牌 → 棄 {n_to_chinese(_hand4[_idx4])}（{_lv4.name}）= 拆牌")
 
+    print("\n--- can_chi 驗收 ---")
+    # 1. 後吃：手牌 1筒(0)+2筒(4)，棄牌 3筒(8)，rank=2 >= 2
+    _r1 = can_chi([0, 4], 8)
+    assert _r1 == (0, 4), f"後吃應回傳 (0, 4)，實際 {_r1}"
+    print(f"  ✓ 後吃 3筒：手牌 {n_to_chinese(0)}+{n_to_chinese(4)} → {_r1}")
+
+    # 2. 夾吃：手牌 1筒(0)+3筒(8)，棄牌 2筒(4)，rank=1, 1<=rank<=7
+    _r2 = can_chi([0, 8], 4)
+    assert _r2 == (0, 8), f"夾吃應回傳 (0, 8)，實際 {_r2}"
+    print(f"  ✓ 夾吃 2筒：手牌 {n_to_chinese(0)}+{n_to_chinese(8)} → {_r2}")
+
+    # 3. 前吃：手牌 2筒(4)+3筒(8)，棄牌 1筒(0)，rank=0 <= 6
+    _r3 = can_chi([4, 8], 0)
+    assert _r3 == (4, 8), f"前吃應回傳 (4, 8)，實際 {_r3}"
+    print(f"  ✓ 前吃 1筒：手牌 {n_to_chinese(4)}+{n_to_chinese(8)} → {_r3}")
+
+    # 4. 無法吃：手牌只有 9筒(32)，棄牌 1筒(0) → 無符合配對
+    _r4 = can_chi([32], 0)
+    assert _r4 is None, f"無法吃應回傳 None，實際 {_r4}"
+    print(f"  ✓ 無法吃 → None")
+
+    # 5. 字牌不可吃：棄牌 東(108) >= SUITED_END → 直接回傳 None
+    _r5 = can_chi([0, 4, 8], 108)
+    assert _r5 is None, f"字牌不可吃應回傳 None，實際 {_r5}"
+    print(f"  ✓ 字牌 東 不可吃 → None")
+
+    print("\n--- is_win_ext 驗收 ---")
+    # 1. chi_count=0：結果與 is_win 相同（17 張胡牌）
+    #    手牌 16 張：1筒對(0,1) + 2-6筒各刻子 → extra=22(6筒第3副)
+    _hw16 = [0, 1, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17, 18, 20, 21]
+    _ex16 = 22   # 6筒第3副（kind=5）
+    _iw = is_win(_hw16, _ex16)
+    _iwe = is_win_ext(_hw16, _ex16, 0)
+    assert _iw == _iwe, f"chi_count=0 應與 is_win 一致，is_win={_iw} is_win_ext={_iwe}"
+    assert _iw is True, f"17 張胡牌應回傳 True，實際 {_iw}"
+    print(f"  ✓ chi_count=0 → is_win_ext={_iwe}（與 is_win 一致）")
+
+    # 2. chi_count=1：14 張手牌可胡（對子 1筒 + 刻子 2-5筒，吃 1 面子已在桌面）
+    #    hand13(13張) + extra(1張) = 14 張 = 1 對 + 4 刻子
+    _hw13 = [0, 1, 4, 5, 6, 8, 9, 10, 12, 13, 14, 16, 17]
+    _ex13 = 18   # 5筒第3副（kind=4）
+    _iwe2 = is_win_ext(_hw13, _ex13, 1)
+    assert _iwe2 is True, f"chi_count=1 胡牌應回傳 True，實際 {_iwe2}"
+    print(f"  ✓ chi_count=1（14張）→ is_win_ext={_iwe2}")
+
 
 def main() -> None:
     """四人 AI 麻將主遊戲迴圈。
