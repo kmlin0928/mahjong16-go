@@ -29,7 +29,7 @@
 - **驗收**：`seen` 統計包含面牌組的每張牌；DangerLevel 計算更準確
 - `35483d5` feat(mahjong-py): 吃/碰/槓後補記手牌配牌至其他玩家 seen
 
-### 3. [/] 重構主迴圈 — 抽出 `_do_chi` / `_do_pon` / `_do_kong` 輔助函式
+### 3. [v] 重構主迴圈 — 抽出 `_do_chi` / `_do_pon` / `_do_kong` 輔助函式
 
 - **檔案範圍**：`mahjong.py`（`main()` 下方新增輔助函式區塊）
 - **摘要**：
@@ -37,8 +37,9 @@
   - 抽出三個輔助函式，接受 `(m, discard_player, meld_player, discard_tile, tiles)` 參數
   - `main()` 改為呼叫這三個函式，行數大幅減少
 - **驗收**：`uv run mahjong.py` 執行結果與重構前相同；程式碼行數減少
+- `af96017` refactor(mahjong-py): 抽出 _do_meld 輔助函式，統一吃/碰/槓執行邏輯
 
-### 4. [ ] 整合測試 — 固定 seed 執行一局並驗證關鍵輸出格式
+### 4. [/] 整合測試 — 固定 seed 執行一局並驗證關鍵輸出格式
 
 - **檔案範圍**：`mahjong.py`（`__main__` 測試區塊末尾）
 - **摘要**：
