@@ -98,7 +98,7 @@ class DangerLevel(IntEnum):
 
     EXTREMELY_DANGEROUS (5) — 極度危險（湊牌中）
         - 數牌，經 find_hand_chows() 偵測，屬於手牌中正在組成順子的牌面
-        - 數牌，經 find_hand_pungs() 偵測，同牌面種類張數 >= 2（刻子半成或已成）
+        - 數牌，經 find_hand_pungs() 偵測，同牌面種類張數 >= 3（刻子已成或槓子）
         - 字牌，經 find_hand_pairs() 偵測，字牌中張數 >= 2（對子候選，含將牌）
         - 以上牌面若棄出，會破壞自身面子或將牌組合，不應棄出
         - 未來整合至 AI 棄牌策略：decide_play() 應跳過此等級的牌
@@ -323,17 +323,18 @@ def find_hand_chows(suited: list[int]) -> list[tuple[int, int, int]] | None:
 
 
 def find_hand_pungs(suited: list[int]) -> list[tuple[int, int]]:
-    """找出手牌數牌中的刻子候選（同牌面種類張數 >= 2）。
+    """找出手牌數牌中的刻子或槓子（同牌面種類張數 >= 3）。
 
-    刻子已成（3 張）或刻子半成（2 張）皆屬湊牌中，標記為 EXTREMELY_DANGEROUS。
+    對子（2 張）由 find_hand_pairs 負責；本函式僅回傳刻子（3 張）與槓子（4 張），
+    兩者皆屬湊牌中，標記為 EXTREMELY_DANGEROUS。
 
     Args:
         suited: 長度 SUITED_KINDS（27）的列表，索引為牌面種類，值為張數
 
     Returns:
-        list of (kind_idx, count)，count 為 2（刻子半成）或 3（刻子已成）
+        list of (kind_idx, count)，count 為 3（刻子已成）或 4（槓子已成）
     """
-    return [(i, c) for i, c in enumerate(suited) if c >= 2]
+    return [(i, c) for i, c in enumerate(suited) if c >= 3]
 
 
 def find_hand_pairs(honor: list[int]) -> list[int]:

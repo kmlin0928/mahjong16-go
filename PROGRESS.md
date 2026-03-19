@@ -29,20 +29,31 @@
 - **驗收**：函式存在，可被 `__main__` 呼叫並通過新增測試
 - `073ea3d` feat(mahjong-py): 新增 find_hand_pairs 偵測字牌對子候選
 
-### 3. [ ] 更新 `DangerLevel.EXTREMELY_DANGEROUS` docstring，說明三種判定來源
+### 3. [v] 更新 `DangerLevel.EXTREMELY_DANGEROUS` docstring，說明三種判定來源
 
 - **檔案範圍**：`mahjong.py`（`DangerLevel` enum docstring）
 - **摘要**：
   - 補充「刻子候選（find_hand_pungs）」與「對子候選（find_hand_pairs）」
   - 更新 README.md 第 5 級說明，列出三種來源
 - **驗收**：`uv run mahjong.py` 執行無誤，README 第 5 列說明更新
+- `f63d179` docs(mahjong-py): 更新 EXTREMELY_DANGEROUS 說明三種湊牌判定來源
 
-### 4. [ ] `__main__` 驗收測試：find_hand_pungs 與 find_hand_pairs
+### 4. [/] 修正 `find_hand_pungs` — 條件改為 c >= 3（刻子/槓子）
+
+- **檔案範圍**：`mahjong.py`（`find_hand_pungs` 函式本體、docstring；EXTREMELY_DANGEROUS docstring；README 第 5 級）
+- **摘要**：
+  - 函式本體：`c >= 2` → `c >= 3`
+  - docstring：count 3 = 刻子（已成），count 4 = 槓子（已成）；移除「刻子候選/半刻」說法
+  - EXTREMELY_DANGEROUS docstring：移除「刻子候選（2張）」說法，改為「刻子（3張）或槓子（4張）」
+  - README 第 5 級同步更新
+- **驗收**：`uv run mahjong.py` 執行無誤
+
+### 5. [ ] `__main__` 驗收測試：find_hand_pungs（刻子/槓子）與 find_hand_pairs
 
 - **檔案範圍**：`mahjong.py`（`__main__` 測試區塊末尾）
 - **摘要**：
-  - `find_hand_pungs`：純刻子手牌（回傳含 kind_idx）、混合手牌、空手牌
-  - `find_hand_pairs`：有對子（回傳 kind_idx）、全孤張（空列表）、刻子不算對子
+  - `find_hand_pungs`：c=2（不回傳）、c=3（刻子，回傳）、c=4（槓子，回傳）、空手牌
+  - `find_hand_pairs`：c=2（對子，回傳）、c=1（不回傳）、c=3（也算 >= 2，回傳）
 - **驗收**：所有 assert 通過，`uv run mahjong.py` 執行無誤
 
 ---
