@@ -17,7 +17,7 @@
 - **驗收**：可直接比較 `DangerLevel.VERY_SAFE < DangerLevel.DANGEROUS`
 - Commit `9179001`：feat(mahjong-py): 新增 DangerLevel 危險等級列舉
 
-### 2. [/] 實作 classify_danger() 核心分類函式
+### 2. [v] 實作 classify_danger() 核心分類函式
 - **檔案範圍**：`mahjong.py`（AI 放槍預防輔助函式區段）
 - **摘要**：`classify_danger(tile, players, target_idx, round_num)` 依序判斷：
   1. **很安全**：花牌（>= BONUS_START），或全局棄牌中出現 ≥ 2 次
@@ -27,8 +27,9 @@
   （吃/碰/槓預留為參數，目前以空列表傳入）
 - **驗收**：對花牌回傳 VERY_SAFE；對字牌回傳 SAFE；
   對從未出現的數牌回傳 VERY_DANGEROUS；對曾早期出現的數牌回傳 DANGEROUS
+- Commit `6dfc176`：feat(mahjong-py): 實作 classify_danger() 四級放槍危險評估
 
-### 3. [ ] 加入驗收測試並更新 README 危險等級說明
+### 3. [/] 加入驗收測試並更新 README 危險等級說明
 - **檔案範圍**：`mahjong.py`（驗收區段）、`README.md`
 - **摘要**：在 `__main__` 驗收區塊加入 classify_danger() 的四種等級測試；
   在 README 的「AI 出牌策略」章節補充危險等級表格

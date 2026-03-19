@@ -790,6 +790,43 @@ if __name__ == "__main__":
     print("  ✓ get_dangerous_tiles() 正確統計其他三家棄牌頻率")
     print("  ✓ target_idx 玩家自身棄牌不計入")
 
+    print("\n--- 危險等級分類驗收 ---")
+    _dp = [PlayerState(n_hand=16) for _ in range(4)]
+
+    # 很安全：花牌
+    assert classify_danger(136, _dp) == DangerLevel.VERY_SAFE
+    print(f"  ✓ 花牌(春) → {classify_danger(136, _dp).name}")
+
+    # 很安全：全局出現 ≥ 2 次的數牌
+    _dp[0].discards = [0]; _dp[1].discards = [0]
+    assert classify_danger(0, _dp) == DangerLevel.VERY_SAFE
+    print(f"  ✓ 1筒出現2次 → {classify_danger(0, _dp).name}")
+
+    # 安全：字牌（東）從未出現
+    _dp2 = [PlayerState(n_hand=16) for _ in range(4)]
+    assert classify_danger(108, _dp2) == DangerLevel.SAFE
+    print(f"  ✓ 東(字牌，未出現) → {classify_danger(108, _dp2).name}")
+
+    # 安全：數牌，最近 3 輪（12 筆）內出現過
+    _dp3 = [PlayerState(n_hand=16) for _ in range(4)]
+    _dp3[0].discards = [4]   # 2筒出現1次，在最近12筆內
+    assert classify_danger(4, _dp3) == DangerLevel.SAFE
+    print(f"  ✓ 2筒近期出現1次 → {classify_danger(4, _dp3).name}")
+
+    # 危險：數牌，早期出現但最近 3 輪未見
+    _dp4 = [PlayerState(n_hand=16) for _ in range(4)]
+    _dp4[0].discards = [0] + [4] * 3   # 1筒在首輪（early），其餘12筆為2筒
+    _dp4[1].discards = [4] * 4
+    _dp4[2].discards = [4] * 4
+    _dp4[3].discards = [4] * 4
+    assert classify_danger(0, _dp4) == DangerLevel.DANGEROUS
+    print(f"  ✓ 1筒早期出現、近期未見 → {classify_danger(0, _dp4).name}")
+
+    # 很危險：數牌，從未出現
+    _dp5 = [PlayerState(n_hand=16) for _ in range(4)]
+    assert classify_danger(8, _dp5) == DangerLevel.VERY_DANGEROUS
+    print(f"  ✓ 3筒從未出現 → {classify_danger(8, _dp5).name}")
+
 
 def main() -> None:
     """四人 AI 麻將主遊戲迴圈。
