@@ -1336,8 +1336,8 @@ def main() -> None:
             drawn = p.hand[-1]      # 補花後的實際摸入牌
             p.add_seen(drawn)
 
-            # 判胡（摸牌後立即判斷，含桌面已成面子）
-            if is_win_ext(p.hand[:-1], drawn, p.chi_count):
+            # 判胡（摸牌後立即判斷，含桌面已成面子；吃與碰均計入 meld_count）
+            if is_win_ext(p.hand[:-1], drawn, p.chi_count + p.pon_count):
                 print(f"\n{player}胡", end="")
                 for t in p.hand[:-1]:
                     print(f" {n_to_chinese(t)}", end="")
@@ -1348,9 +1348,9 @@ def main() -> None:
             if not m.remain:
                 break
         else:
-            # 吃牌輪次：跳過摸牌，直接進入出牌
+            # 吃/碰牌輪次：跳過摸牌，直接進入出牌
             skip_draw = False
-            print(f"\n{player}吃後出牌", end="")
+            print(f"\n{player}出牌", end="")
 
         # AI 計算聽牌與出牌
         calculate_gates(m, p, ai)
@@ -1379,26 +1379,50 @@ def main() -> None:
         for other in range(1, 4):
             m.players[(player + other) % 4].add_seen(discard_tile)
 
-        # 檢查下一家是否自動吃牌（僅限數牌）
-        next_idx = (player + 1) % 4
-        np = m.players[next_idx]
-        chi_pair = can_chi(np.hand, discard_tile) if discard_tile < SUITED_END else None
-        if chi_pair is not None:
-            ta, tb = chi_pair
-            np.hand.remove(ta)
-            np.hand.remove(tb)
-            np.table.extend([ta, tb, discard_tile])
-            np.chi_count += 1
-            p.discards.pop()    # 棄牌被吃走，移出海底
-            print(
-                f"\n  {next_idx}吃 {n_to_chinese(discard_tile)}"
-                f"（{n_to_chinese(ta)} {n_to_chinese(tb)}）",
-                end="",
-            )
-            skip_draw = True
-            player = next_idx
-        else:
-            player = (player + 1) % 4
+        # 檢查其他三家是否自動碰牌（優先於吃牌，數牌與字牌均可）
+        pon_player: int | None = None
+        for offset in range(1, 4):
+            cand_idx = (player + offset) % 4
+            cand_p = m.players[cand_idx]
+            pon_pair = can_pon(cand_p.hand, discard_tile)
+            if pon_pair is not None:
+                ta, tb = pon_pair
+                cand_p.hand.remove(ta)
+                cand_p.hand.remove(tb)
+                cand_p.table.extend([ta, tb, discard_tile])
+                cand_p.pon_count += 1
+                p.discards.pop()    # 棄牌被碰走，移出海底
+                print(
+                    f"\n  {cand_idx}碰 {n_to_chinese(discard_tile)}"
+                    f"（{n_to_chinese(ta)} {n_to_chinese(tb)}）",
+                    end="",
+                )
+                skip_draw = True
+                player = cand_idx
+                pon_player = cand_idx
+                break
+
+        if pon_player is None:
+            # 無人碰牌，再檢查下一家是否自動吃牌（僅限數牌）
+            next_idx = (player + 1) % 4
+            np = m.players[next_idx]
+            chi_pair = can_chi(np.hand, discard_tile) if discard_tile < SUITED_END else None
+            if chi_pair is not None:
+                ta, tb = chi_pair
+                np.hand.remove(ta)
+                np.hand.remove(tb)
+                np.table.extend([ta, tb, discard_tile])
+                np.chi_count += 1
+                p.discards.pop()    # 棄牌被吃走，移出海底
+                print(
+                    f"\n  {next_idx}吃 {n_to_chinese(discard_tile)}"
+                    f"（{n_to_chinese(ta)} {n_to_chinese(tb)}）",
+                    end="",
+                )
+                skip_draw = True
+                player = next_idx
+            else:
+                player = (player + 1) % 4
 
     print("\n和局")
 

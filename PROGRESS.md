@@ -20,15 +20,16 @@
 - **驗收**：數牌可碰/字牌可碰/牌不夠不可碰/花牌不可碰
 - `26b6b8c` feat(mahjong-py): 新增 can_pon 偵測手牌可碰棄牌的刻子配對
 
-### 2. [/] 新增 `pon_count` 至 `PlayerState`
+### 2. [v] 新增 `pon_count` 至 `PlayerState`
 
 - **檔案範圍**：`mahjong.py`（`PlayerState` dataclass，`chi_count` 正下方）
 - **摘要**：
   - `PlayerState` 新增 `pon_count: int = 0`，記錄已碰的面子數
   - 更新 `is_win_ext` docstring：`meld_count` 同時計入吃與碰的面子數
 - **驗收**：`PlayerState` 建立後 `pon_count == 0`
+- `c49b0f7` feat(mahjong-py): 新增 pon_count 欄位至 PlayerState
 
-### 3. [ ] 更新主迴圈 — 棄牌後優先碰牌，碰牌後直接棄牌
+### 3. [/] 更新主迴圈 — 棄牌後優先碰牌，碰牌後直接棄牌
 
 - **檔案範圍**：`mahjong.py`（`main()` 函式，現有 chi 判斷邏輯附近）
 - **摘要**：
