@@ -38,7 +38,7 @@
 - **驗收**：`uv run mahjong.py` 執行無誤，README 第 5 列說明更新
 - `f63d179` docs(mahjong-py): 更新 EXTREMELY_DANGEROUS 說明三種湊牌判定來源
 
-### 4. [/] 修正 `find_hand_pungs` — 條件改為 c >= 3（刻子/槓子）
+### 4. [v] 修正 `find_hand_pungs` — 條件改為 c >= 3（刻子/槓子）
 
 - **檔案範圍**：`mahjong.py`（`find_hand_pungs` 函式本體、docstring；EXTREMELY_DANGEROUS docstring；README 第 5 級）
 - **摘要**：
@@ -47,6 +47,7 @@
   - EXTREMELY_DANGEROUS docstring：移除「刻子候選（2張）」說法，改為「刻子（3張）或槓子（4張）」
   - README 第 5 級同步更新
 - **驗收**：`uv run mahjong.py` 執行無誤
+- `8ba9017` fix(mahjong-py): 修正 find_hand_pungs 條件為 c >= 3（刻子/槓子）
 
 ### 5. [ ] `__main__` 驗收測試：find_hand_pungs（刻子/槓子）與 find_hand_pairs
 

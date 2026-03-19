@@ -968,6 +968,52 @@ if __name__ == "__main__":
     assert DangerLevel.EXTREMELY_DANGEROUS > DangerLevel.VERY_DANGEROUS
     print(f"  ✓ EXTREMELY_DANGEROUS > VERY_DANGEROUS 比較正確")
 
+    print("\n--- find_hand_pungs 驗收 ---")
+    # 1. c=2（對子）→ 不回傳（刻子需 >= 3）
+    _p1 = [0] * SUITED_KINDS
+    _p1[0] = 2
+    assert find_hand_pungs(_p1) == [], f"c=2 不應回傳，實際 {find_hand_pungs(_p1)}"
+    print("  ✓ c=2（對子）→ 不回傳 []")
+
+    # 2. c=3（刻子已成）→ 回傳 [(0, 3)]
+    _p2 = [0] * SUITED_KINDS
+    _p2[0] = 3
+    assert find_hand_pungs(_p2) == [(0, 3)], f"c=3 應回傳 [(0,3)]，實際 {find_hand_pungs(_p2)}"
+    print("  ✓ c=3（刻子）→ [(0, 3)]")
+
+    # 3. c=4（槓子已成）→ 回傳 [(0, 4)]
+    _p3 = [0] * SUITED_KINDS
+    _p3[0] = 4
+    assert find_hand_pungs(_p3) == [(0, 4)], f"c=4 應回傳 [(0,4)]，實際 {find_hand_pungs(_p3)}"
+    print("  ✓ c=4（槓子）→ [(0, 4)]")
+
+    # 4. 混合：c=2 + c=3 → 只回傳 c=3 的項目
+    _p4 = [0] * SUITED_KINDS
+    _p4[0] = 2; _p4[1] = 3
+    assert find_hand_pungs(_p4) == [(1, 3)], f"混合應只回傳 [(1,3)]，實際 {find_hand_pungs(_p4)}"
+    print("  ✓ 混合(c=2, c=3) → 只回傳刻子 [(1, 3)]")
+
+    print("\n--- find_hand_pairs 驗收 ---")
+    _hp_honor = HONOR_KINDS
+
+    # 1. c=2（對子）→ 回傳 [0]
+    _h1 = [0] * _hp_honor
+    _h1[0] = 2
+    assert find_hand_pairs(_h1) == [0], f"c=2 應回傳 [0]，實際 {find_hand_pairs(_h1)}"
+    print("  ✓ c=2（對子）→ [0]")
+
+    # 2. c=1（孤張）→ 不回傳
+    _h2 = [0] * _hp_honor
+    _h2[0] = 1
+    assert find_hand_pairs(_h2) == [], f"c=1 應回傳 []，實際 {find_hand_pairs(_h2)}"
+    print("  ✓ c=1（孤張）→ []")
+
+    # 3. c=3（字牌刻子）→ 也算 >= 2，回傳 [0]
+    _h3 = [0] * _hp_honor
+    _h3[0] = 3
+    assert find_hand_pairs(_h3) == [0], f"c=3 應回傳 [0]，實際 {find_hand_pairs(_h3)}"
+    print("  ✓ c=3（字牌刻子）→ 也算對子候選 [0]")
+
 
 def main() -> None:
     """四人 AI 麻將主遊戲迴圈。
