@@ -384,6 +384,58 @@ def _get_meld_kinds(hand17: list[int]) -> set[int]:
     return kinds
 
 
+def danger_discard_index(
+    hand17: list[int],
+    players: list[PlayerState],
+) -> tuple[int, DangerLevel]:
+    """按放槍 DangerLevel 選出最佳棄牌索引。
+
+    判定流程：
+    1. 對 hand17 每張牌計算危險等級：
+       - 其 kind 在 _get_meld_kinds() 結果中 → EXTREMELY_DANGEROUS（湊牌，不應棄出）
+       - 否則 → classify_danger(tile, players)（放槍危險評估）
+    2. 選出等級最小（最安全）的候選牌
+    3. 同等級時優先棄字牌（SUITED_END <= tile < BONUS_START）
+    4. 同等級無字牌時，棄離中間牌（5筒/5索/5萬，offset=4）最遠的數牌
+
+    若棄出的牌等級為 EXTREMELY_DANGEROUS（湊牌），稱為「拆牌」。
+
+    Args:
+        hand17:  含摸入牌的 17 張牌號列表
+        players: 四位玩家狀態（供 classify_danger 評估放槍風險）
+
+    Returns:
+        (hand17 中的棄牌索引, 該牌的 DangerLevel)
+    """
+    meld_kinds = _get_meld_kinds(hand17)
+
+    # 計算每張牌的危險等級
+    levels: list[DangerLevel] = []
+    for tile in hand17:
+        kind = tile // COPIES
+        if kind in meld_kinds:
+            levels.append(DangerLevel.EXTREMELY_DANGEROUS)
+        else:
+            levels.append(classify_danger(tile, players))
+
+    min_level = min(levels)
+    candidates = [i for i, lv in enumerate(levels) if lv == min_level]
+
+    # 同等級優先棄字牌
+    honor_cands = [i for i in candidates
+                   if SUITED_END <= hand17[i] < BONUS_START]
+    if honor_cands:
+        return honor_cands[0], min_level
+
+    # 無字牌：棄離 5（offset=4）最遠的數牌
+    def _dist_from_center(idx: int) -> int:
+        kind = hand17[idx] // COPIES
+        return abs(kind % TILES_PER_SUIT - 4)
+
+    best = max(candidates, key=_dist_from_center)
+    return best, min_level
+
+
 def is_suit(suited: list[int]) -> bool:
     """Theorem 1：以貪婪遞迴判斷數牌是否可完整分解為刻子或順子。
 

@@ -8,7 +8,7 @@
 
 ## 任務清單
 
-### 1. [/] 新增 `_get_meld_kinds` — 偵測手牌中屬於湊牌的牌面種類集合
+### 1. [v] 新增 `_get_meld_kinds` — 偵測手牌中屬於湊牌的牌面種類集合
 
 - **檔案範圍**：`mahjong.py`（`danger_discard_index` 正上方）
 - **摘要**：
@@ -16,8 +16,9 @@
   - 呼叫 `find_hand_chows` / `find_hand_pungs` / `find_hand_pairs`，收集所有湊牌牌面種類索引
   - 回傳 `set[int]`（全局牌面種類索引，含字牌偏移量）
 - **驗收**：可被後續函式呼叫，結果正確區分湊牌與孤張
+- `75b9cde` feat(mahjong-py): 新增 _get_meld_kinds 偵測手牌湊牌種類集合
 
-### 2. [ ] 新增 `danger_discard_index` — 按 DangerLevel 選出最佳棄牌索引
+### 2. [/] 新增 `danger_discard_index` — 按 DangerLevel 選出最佳棄牌索引
 
 - **檔案範圍**：`mahjong.py`（`_get_meld_kinds` 正下方）
 - **摘要**：
