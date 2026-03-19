@@ -127,13 +127,15 @@ class PlayerState:
 
     Attributes:
         hand:     手牌列表，長度為 n_hand（不含剛摸入的牌）
-        table:    已亮出的花牌列表
+        bonus:    已亮出的花牌列表（春夏秋冬梅蘭菊竹）
+        melds:    已亮出的面牌組列表，每組為 [配牌..., 棄牌] 共 3–4 張
         seen:     索引為牌面種類（tile // COPIES），記錄各牌面已出現張數
         discards: 該玩家本局打出的所有牌（依打出順序排列），供 AI 放槍預防使用
     """
     n_hand: int
     hand: list[int] = field(default_factory=list)
-    table: list[int] = field(default_factory=list)
+    bonus: list[int] = field(default_factory=list)
+    melds: list[list[int]] = field(default_factory=list)
     seen: list[int] = field(default_factory=lambda: [0] * (SUITED_KINDS + HONOR_KINDS))
     discards: list[int] = field(default_factory=list)
     chi_count: int = 0   # 本局已吃的面子數（每吃一次 +1）
@@ -222,7 +224,7 @@ class Mahjong:
             idx: 手牌中需要檢查的位置索引
         """
         while p.hand[idx] >= BONUS_START:
-            p.table.append(p.hand[idx])
+            p.bonus.append(p.hand[idx])
             next_tile = self.deal_one()
             if next_tile < 0:
                 return
@@ -1006,7 +1008,8 @@ if __name__ == "__main__":
     for p in m.players:
         assert p.n_hand == 16
         assert p.hand == []
-        assert p.table == []
+        assert p.bonus == []
+        assert p.melds == []
         assert len(p.seen) == SUITED_KINDS + HONOR_KINDS
     p0 = m.players[0]
     p0.add_seen(0)
@@ -1443,9 +1446,11 @@ def main() -> None:
         print(f"\n{player}打 {n_to_chinese(discard_tile)}{tear}_", end="")
         for t in p.hand:
             print(f" {n_to_chinese(t)}", end="")
-        if p.table:
-            for t in p.table:
-                print(f"|{n_to_chinese(t)}", end="")
+        if p.bonus:
+            for t in p.bonus:
+                print(f" 花:{n_to_chinese(t)}", end="")
+        for meld in p.melds:
+            print(f" [{' '.join(n_to_chinese(t) for t in meld)}]", end="")
 
         # 棄牌記入各家記牌
         p.discards.append(discard_tile)
@@ -1464,7 +1469,7 @@ def main() -> None:
                     cand_p.hand.remove(ta)
                     cand_p.hand.remove(tb)
                     cand_p.hand.remove(tc)
-                    cand_p.table.extend([ta, tb, tc, discard_tile])
+                    cand_p.melds.append([ta, tb, tc, discard_tile])
                     cand_p.kong_count += 1
                     p.discards.pop()    # 棄牌被槓走，移出海底
                     print(
@@ -1488,7 +1493,7 @@ def main() -> None:
                     ta, tb = pon_pair
                     cand_p.hand.remove(ta)
                     cand_p.hand.remove(tb)
-                    cand_p.table.extend([ta, tb, discard_tile])
+                    cand_p.melds.append([ta, tb, discard_tile])
                     cand_p.pon_count += 1
                     p.discards.pop()    # 棄牌被碰走，移出海底
                     print(
@@ -1510,7 +1515,7 @@ def main() -> None:
                 ta, tb = chi_pair
                 np.hand.remove(ta)
                 np.hand.remove(tb)
-                np.table.extend([ta, tb, discard_tile])
+                np.melds.append([ta, tb, discard_tile])
                 np.chi_count += 1
                 p.discards.pop()    # 棄牌被吃走，移出海底
                 print(
