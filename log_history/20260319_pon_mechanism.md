@@ -52,7 +52,7 @@
 - **驗收**：README 清楚描述碰牌流程與優先順序
 - `a59ff46` docs: README 新增碰牌機制說明（can_pon、流程、優先順序）
 
-### 5. [/] `__main__` 驗收測試：`can_pon`
+### 5. [v] `__main__` 驗收測試：`can_pon`
 
 - **檔案範圍**：`mahjong.py`（`__main__` 測試區塊，`can_chi` 測試正下方）
 - **摘要**：
@@ -61,6 +61,7 @@
   - 牌不夠：手牌只有 1 張 → 回傳 None
   - 花牌不可碰：tile >= BONUS_START → 回傳 None
 - **驗收**：所有 assert 通過
+- `ebbc2e8` test(mahjong-py): 新增 can_pon __main__ 驗收測試
 
 ---
 
