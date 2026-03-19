@@ -78,14 +78,16 @@ class PlayerState:
     """單一玩家的遊戲狀態。
 
     Attributes:
-        hand: 手牌列表，長度為 n_hand（不含剛摸入的牌）
-        table: 已亮出的花牌列表
-        seen: 索引為牌面種類（tile // COPIES），記錄各牌面已出現張數
+        hand:     手牌列表，長度為 n_hand（不含剛摸入的牌）
+        table:    已亮出的花牌列表
+        seen:     索引為牌面種類（tile // COPIES），記錄各牌面已出現張數
+        discards: 該玩家本局打出的所有牌（依打出順序排列），供 AI 放槍預防使用
     """
     n_hand: int
     hand: list[int] = field(default_factory=list)
     table: list[int] = field(default_factory=list)
     seen: list[int] = field(default_factory=lambda: [0] * (SUITED_KINDS + HONOR_KINDS))
+    discards: list[int] = field(default_factory=list)
 
     def add_seen(self, tile: int) -> None:
         """記錄某張牌已出現（包含自己摸到或他人打出）。
@@ -115,17 +117,30 @@ class Mahjong:
     """麻將遊戲狀態，管理牌堆與四位玩家。
 
     Attributes:
-        n_hand: 每位玩家起始手牌數（預設 16）
-        remain: 剩餘待摸牌堆
-        sea: 棄牌海底（所有玩家打出的牌）
-        players: 四位玩家的遊戲狀態
-        ai: 四位玩家的 AI 決策資料
+        n_hand:  每位玩家起始手牌數（預設 16）
+        remain:  剩餘待摸牌堆
+        players: 四位玩家的遊戲狀態（各自的 discards 記錄個人棄牌）
+        ai:      四位玩家的 AI 決策資料
+
+    棄牌查詢：
+        全局海底請使用 sea 屬性（聚合所有玩家的 discards）；
+        個人棄牌請直接存取 players[i].discards。
     """
     n_hand: int = 16
     remain: list[int] = field(default_factory=list)
-    sea: list[int] = field(default_factory=list)
     players: list[PlayerState] = field(default_factory=list)
     ai: list[AIContext] = field(default_factory=list)
+
+    @property
+    def sea(self) -> list[int]:
+        """聚合所有玩家棄牌，回傳完整海底牌列表（依打出順序交錯）。"""
+        result = []
+        max_len = max((len(p.discards) for p in self.players), default=0)
+        for i in range(max_len):
+            for p in self.players:
+                if i < len(p.discards):
+                    result.append(p.discards[i])
+        return result
 
     def __post_init__(self) -> None:
         """初始化四位玩家的狀態與 AI 資料。"""
