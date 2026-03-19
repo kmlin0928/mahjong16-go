@@ -1472,6 +1472,11 @@ def main() -> None:
                     cand_p.melds.append([ta, tb, tc, discard_tile])
                     cand_p.kong_count += 1
                     p.discards.pop()    # 棄牌被槓走，移出海底
+                    # 槓牌的手牌配牌（ta,tb,tc）公開，通知其他玩家已見
+                    for hand_tile in (ta, tb, tc):
+                        for obs in range(4):
+                            if obs != cand_idx:
+                                m.players[obs].add_seen(hand_tile)
                     print(
                         f"\n  {cand_idx}槓 {n_to_chinese(discard_tile)}"
                         f"（{n_to_chinese(ta)} {n_to_chinese(tb)} {n_to_chinese(tc)}）",
@@ -1496,6 +1501,11 @@ def main() -> None:
                     cand_p.melds.append([ta, tb, discard_tile])
                     cand_p.pon_count += 1
                     p.discards.pop()    # 棄牌被碰走，移出海底
+                    # 碰牌的手牌配牌（ta,tb）公開，通知其他玩家已見
+                    for hand_tile in (ta, tb):
+                        for obs in range(4):
+                            if obs != cand_idx:
+                                m.players[obs].add_seen(hand_tile)
                     print(
                         f"\n  {cand_idx}碰 {n_to_chinese(discard_tile)}"
                         f"（{n_to_chinese(ta)} {n_to_chinese(tb)}）",
@@ -1518,6 +1528,11 @@ def main() -> None:
                 np.melds.append([ta, tb, discard_tile])
                 np.chi_count += 1
                 p.discards.pop()    # 棄牌被吃走，移出海底
+                # 吃牌的手牌配牌（ta,tb）公開，通知其他玩家已見
+                for hand_tile in (ta, tb):
+                    for obs in range(4):
+                        if obs != next_idx:
+                            m.players[obs].add_seen(hand_tile)
                 print(
                     f"\n  {next_idx}吃 {n_to_chinese(discard_tile)}"
                     f"（{n_to_chinese(ta)} {n_to_chinese(tb)}）",
