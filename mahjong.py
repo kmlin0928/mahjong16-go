@@ -98,7 +98,9 @@ class DangerLevel(IntEnum):
 
     EXTREMELY_DANGEROUS (5) — 極度危險（湊牌中）
         - 數牌，經 find_hand_chows() 偵測，屬於手牌中正在組成順子的牌面
-        - 此類牌若棄出，會破壞自身順子組合，不應棄出
+        - 數牌，經 find_hand_pungs() 偵測，同牌面種類張數 >= 2（刻子半成或已成）
+        - 字牌，經 find_hand_pairs() 偵測，字牌中張數 >= 2（對子候選，含將牌）
+        - 以上牌面若棄出，會破壞自身面子或將牌組合，不應棄出
         - 未來整合至 AI 棄牌策略：decide_play() 應跳過此等級的牌
     """
     EXTREMELY_SAFE      = 0

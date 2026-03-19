@@ -8,7 +8,7 @@
 
 ## 任務清單
 
-### 1. [/] 新增 `find_hand_pungs` — 偵測手牌中的「刻子候選」（2 張以上同花同點）
+### 1. [v] 新增 `find_hand_pungs` — 偵測手牌中的「刻子候選」（2 張以上同花同點）
 
 - **檔案範圍**：`mahjong.py`（`find_hand_chows` 正下方）
 - **摘要**：
@@ -17,8 +17,9 @@
     （每個 tuple 為 `(kind_idx, count)`，count 為 2 或 3）
   - 刻子已成（3 張）→ 極度危險；刻子半成（2 張）→ 同樣是湊牌極度危險
 - **驗收**：函式存在，可被 `__main__` 呼叫並通過新增測試
+- `42ac900` feat(mahjong-py): 新增 find_hand_pungs 偵測刻子候選
 
-### 2. [ ] 新增 `find_hand_pairs` — 偵測手牌中的「對子候選」（2 張以上同花同點）
+### 2. [v] 新增 `find_hand_pairs` — 偵測手牌中的「對子候選」（2 張以上同花同點）
 
 - **檔案範圍**：`mahjong.py`（honor 牌面也適用，輸入為全牌面 seen list 或 honor list）
 - **摘要**：
@@ -26,6 +27,7 @@
   - 輸出 honor 中張數 ≥ 2 的牌面種類索引，以 `list[int]` 回傳
   - 對子（含將牌候選）屬湊牌中，應標記為 EXTREMELY_DANGEROUS
 - **驗收**：函式存在，可被 `__main__` 呼叫並通過新增測試
+- `073ea3d` feat(mahjong-py): 新增 find_hand_pairs 偵測字牌對子候選
 
 ### 3. [ ] 更新 `DangerLevel.EXTREMELY_DANGEROUS` docstring，說明三種判定來源
 
