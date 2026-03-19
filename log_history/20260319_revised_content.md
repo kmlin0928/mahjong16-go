@@ -23,12 +23,13 @@
 - **驗收**：一局跑完後，四位玩家 `discards` 長度之和等於總打出牌數
 - Commit `8f6b439`：feat(mahjong-py): 主迴圈改用 p.discards 記錄個人棄牌
 
-### 3. [/] 新增 AI 放槍預防的資料查詢介面
+### 3. [v] 新增 AI 放槍預防的資料查詢介面
 - **檔案範圍**：`mahjong.py`（新增獨立函式）
 - **摘要**：新增 `get_dangerous_tiles(players, target_idx)` 函式，
   從其他三家的 `discards` 統計各牌面的出現頻率，
   回傳 `dict[int, int]`（牌面種類 → 出現次數），供未來 AI 決策使用
 - **驗收**：對固定 `discards` 輸入呼叫後，回傳正確的統計字典；加入驗收測試
+- Commit `a96c172`：feat(mahjong-py): 新增 get_dangerous_tiles() 放槍預防查詢介面
 
 ---
 
