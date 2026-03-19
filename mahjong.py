@@ -134,6 +134,7 @@ class PlayerState:
     seen: list[int] = field(default_factory=lambda: [0] * (SUITED_KINDS + HONOR_KINDS))
     discards: list[int] = field(default_factory=list)
     chi_count: int = 0   # 本局已吃的面子數（每吃一次 +1）
+    pon_count: int = 0   # 本局已碰的面子數（每碰一次 +1）
 
     def add_seen(self, tile: int) -> None:
         """記錄某張牌已出現（包含自己摸到或他人打出）。

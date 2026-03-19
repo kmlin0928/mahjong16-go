@@ -9,7 +9,7 @@
 
 ## 任務清單
 
-### 1. [/] 新增 `can_pon` — 判斷手牌是否可碰棄牌
+### 1. [v] 新增 `can_pon` — 判斷手牌是否可碰棄牌
 
 - **檔案範圍**：`mahjong.py`（`can_chi` 正下方，AI 放槍預防輔助函式區塊）
 - **摘要**：
@@ -18,8 +18,9 @@
   - 找到回傳 `tuple[int, int]`，找不到回傳 `None`
   - 數牌與字牌均可碰，花牌不可碰（`tile >= BONUS_START` 回傳 None）
 - **驗收**：數牌可碰/字牌可碰/牌不夠不可碰/花牌不可碰
+- `26b6b8c` feat(mahjong-py): 新增 can_pon 偵測手牌可碰棄牌的刻子配對
 
-### 2. [ ] 新增 `pon_count` 至 `PlayerState`
+### 2. [/] 新增 `pon_count` 至 `PlayerState`
 
 - **檔案範圍**：`mahjong.py`（`PlayerState` dataclass，`chi_count` 正下方）
 - **摘要**：
