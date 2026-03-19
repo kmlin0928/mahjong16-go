@@ -9,7 +9,7 @@
 
 ## 任務清單
 
-### 1. [/] 新增 `can_kong` — 判斷手牌是否可明槓棄牌
+### 1. [v] 新增 `can_kong` — 判斷手牌是否可明槓棄牌
 
 - **檔案範圍**：`mahjong.py`（`can_pon` 正下方）
 - **摘要**：
@@ -18,8 +18,9 @@
   - 找到回傳 `tuple[int, int, int]`，找不到回傳 `None`
   - 數牌與字牌均可明槓；花牌（`tile >= BONUS_START`）不可槓
 - **驗收**：數牌可槓/字牌可槓/只有 2 張不可槓/花牌不可槓
+- `44d3313` feat(mahjong-py): 新增 can_kong 偵測手牌可明槓棄牌的槓子配對
 
-### 2. [ ] 新增 `kong_count` 至 `PlayerState`，更新 `is_win_ext`
+### 2. [/] 新增 `kong_count` 至 `PlayerState`，更新 `is_win_ext`
 
 - **檔案範圍**：`mahjong.py`（`PlayerState` dataclass；`is_win_ext`）
 - **摘要**：

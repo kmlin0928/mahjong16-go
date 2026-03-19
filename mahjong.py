@@ -30,6 +30,9 @@ WIND_KINDS = WIND_COUNT                                     # 4
 DRAGON_KINDS = DRAGON_COUNT                                 # 3
 HONOR_KINDS = WIND_KINDS + DRAGON_KINDS                     # 7（字牌合計）
 
+# AI 行為開關
+AI_AUTO_KONG: bool = False   # 明槓：預設不自動槓，改為 True 可啟用
+
 _SUIT_NAMES = ["筒", "索", "萬"]
 _WIND_NAMES = ["東", "南", "西", "北"]
 _DRAGON_NAMES = ["中", "發", "白"]
@@ -135,6 +138,7 @@ class PlayerState:
     discards: list[int] = field(default_factory=list)
     chi_count: int = 0   # 本局已吃的面子數（每吃一次 +1）
     pon_count: int = 0   # 本局已碰的面子數（每碰一次 +1）
+    kong_count: int = 0  # 本局已明槓的面子數（每槓一次 +1）
 
     def add_seen(self, tile: int) -> None:
         """記錄某張牌已出現（包含自己摸到或他人打出）。
