@@ -703,6 +703,67 @@ def decide_play(
 
 
 # ---------------------------------------------------------------------------
+# 吃牌輔助函式
+# ---------------------------------------------------------------------------
+
+def can_chi(hand: list[int], tile: int) -> tuple[int, int] | None:
+    """找出手牌中可與棄牌構成順子的第一個配對（自動吃牌用）。
+
+    三種吃法（同花色）：
+    - 後吃：(tile-2, tile-1, tile) — rank >= 2
+    - 夾吃：(tile-1, tile, tile+1) — 1 <= rank <= 7
+    - 前吃：(tile, tile+1, tile+2) — rank <= 6
+
+    未來可改由 chi_ai 決策函式呼叫，加入吃或不吃的策略判斷。
+
+    Args:
+        hand: 手牌列表（牌號整數）
+        tile: 欲吃的棄牌牌號（必須為數牌，tile < SUITED_END）
+
+    Returns:
+        手牌中可與 tile 合成順子的 (tile_a, tile_b)；無法吃則回傳 None
+    """
+    if tile >= SUITED_END:
+        return None  # 字牌與花牌不可吃
+
+    kind_d = tile // COPIES
+    rank_d = kind_d % TILES_PER_SUIT  # 0=1, 1=2, ..., 8=9
+
+    def _find(kind: int) -> int | None:
+        """在 hand 中找到第一張符合 kind 的牌號。"""
+        for t in hand:
+            if t // COPIES == kind:
+                return t
+        return None
+
+    # 三種吃法依序嘗試
+    combos: list[tuple[int, int]] = []
+    if rank_d >= 2:                       # 後吃：(k-2, k-1, k)
+        combos.append((kind_d - 2, kind_d - 1))
+    if 1 <= rank_d <= 7:                  # 夾吃：(k-1, k, k+1)
+        combos.append((kind_d - 1, kind_d + 1))
+    if rank_d <= 6:                       # 前吃：(k, k+1, k+2)
+        combos.append((kind_d + 1, kind_d + 2))
+
+    for ka, kb in combos:
+        ta = _find(ka)
+        if ta is None:
+            continue
+        # 找 kb，需排除已用的 ta
+        hand_minus = list(hand)
+        hand_minus.remove(ta)
+        tb = None
+        for t in hand_minus:
+            if t // COPIES == kb:
+                tb = t
+                break
+        if tb is not None:
+            return ta, tb
+
+    return None
+
+
+# ---------------------------------------------------------------------------
 # AI 放槍預防輔助函式
 # ---------------------------------------------------------------------------
 
