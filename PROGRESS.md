@@ -21,13 +21,14 @@
 - **驗收**：對局中僅單張等胡時，台數出現「獨聽+1」；有多種等牌時不顯示
 - **716e31c** feat(mahjong-py): 實作獨聽 +1 台（僅等一種牌面）
 
-### 2. [/] 更新 score_hand() docstring
+### 2. [v] 更新 score_hand() docstring
 
 - **檔案範圍**：`mahjong.py`（`score_hand()` Args 說明）
 - **摘要**：補充獨聽邏輯說明（掃描 34 種牌面）
 - **驗收**：docstring 說明獨聽判斷條件
+- **c9ef67e** docs(mahjong-py): score_hand docstring 補充獨聽判斷說明
 
-### 3. [ ] README.md 胡牌台數表格新增獨聽
+### 3. [/] README.md 胡牌台數表格新增獨聽
 
 - **檔案範圍**：`README.md`（「## 胡牌台數」表格）
 - **摘要**：在表格末尾加入「獨聽 | +1 | 僅等一種牌面才能胡牌」
