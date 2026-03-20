@@ -24,13 +24,14 @@
 - **驗收**：有碰/吃/槓後放槍胡 → 台數出現「半求+1」；門清放槍依然為「門清+1」
 - **a7403b8** feat(mahjong-py): 實作半求 +1 台（有副露放槍胡）
 
-### 2. [/] 更新 score_hand() docstring
+### 2. [v] 更新 score_hand() docstring
 
 - **檔案範圍**：`mahjong.py`（`score_hand()` 函式 docstring）
 - **摘要**：在 Returns 說明中補充四種自摸/放槍組合（不求/自摸/門清/半求）一覽
 - **驗收**：docstring 可讀且完整說明四種情況
+- **1bc3ea6** docs(mahjong-py): score_hand docstring 補充四種基礎台數組合說明
 
-### 3. [ ] README.md 胡牌台數表格新增半求
+### 3. [/] README.md 胡牌台數表格新增半求
 
 - **檔案範圍**：`README.md`（「## 胡牌台數」表格）
 - **摘要**：在自摸/門清/不求附近插入半求一列
