@@ -1416,8 +1416,18 @@ def _do_meld(
                 m.players[obs].add_seen(t)
 
 
-def main() -> None:
+def main(
+    dealer_idx_override: int | None = None,
+    consecutive: int = 0,
+) -> tuple[int | None, int]:
     """四人 AI 麻將主遊戲迴圈。
+
+    Args:
+        dealer_idx_override: 指定莊家座位（連莊時傳入）；None 則隨機決定局風。
+        consecutive:         本局連莊次數（0 表示首局）。
+
+    Returns:
+        (winner, dealer_idx)：winner 為胡牌玩家索引，和局時為 None。
 
     流程：
     1. 初始化並發牌、補花
@@ -1434,9 +1444,14 @@ def main() -> None:
     start = _random.randint(0, 3)
     seat_winds = [_SEAT_WIND_NAMES[(start + i) % 4] for i in range(4)]
     human_wind = seat_winds[HUMAN_PLAYER]
-    game_wind = _random.choice(_SEAT_WIND_NAMES)
-    dealer_idx = seat_winds.index(game_wind)
-    print(f"\n【你是 {human_wind}（座位 {HUMAN_PLAYER}）｜{game_wind}局】")
+    if dealer_idx_override is not None:
+        dealer_idx = dealer_idx_override
+        game_wind = seat_winds[dealer_idx]
+    else:
+        game_wind = _random.choice(_SEAT_WIND_NAMES)
+        dealer_idx = seat_winds.index(game_wind)
+    consec_label = f"  連莊 {consecutive} 次" if consecutive > 0 else ""
+    print(f"\n【你是 {human_wind}（座位 {HUMAN_PLAYER}）｜{game_wind}局{consec_label}】")
     for i, w in enumerate(seat_winds):
         parts = []
         if i == HUMAN_PLAYER:
@@ -1477,13 +1492,13 @@ def main() -> None:
                     ans = input(f"\n自摸胡！宣胡？(y/n) ").strip().lower()
                     if ans == "y":
                         print(f"\n{player}自摸胡 {n_to_chinese(drawn)}")
-                        return
+                        return player, dealer_idx
                 else:
                     print(f"\n{player}胡", end="")
                     for t in p.hand[:-1]:
                         print(f" {n_to_chinese(t)}", end="")
                     print()
-                    return
+                    return player, dealer_idx
 
             # 牌堆若已空（補花後耗盡），宣告和局
             if not m.remain:
@@ -1559,7 +1574,7 @@ def main() -> None:
                 print(
                     f"\n  {cand_idx}胡！（{player} 放槍 {n_to_chinese(discard_tile)}）"
                 )
-                return
+                return cand_idx, dealer_idx
 
         # 檢查其他三家是否明槓（AI_AUTO_KONG 控制；人類玩家詢問 y/n）
         kong_player: int | None = None
@@ -1693,6 +1708,7 @@ def main() -> None:
                 player = (player + 1) % 4
 
     print("\n和局")
+    return None, dealer_idx
 
 
 if __name__ == "__main__":
