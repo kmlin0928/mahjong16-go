@@ -1502,6 +1502,20 @@ def main() -> None:
         for other in range(1, 4):
             m.players[(player + other) % 4].add_seen(discard_tile)
 
+        # 放槍判定：棄牌後立即掃描其他三家
+        for offset in range(1, 4):
+            cand_idx = (player + offset) % 4
+            cand_p = m.players[cand_idx]
+            if is_win_ext(
+                cand_p.hand,
+                discard_tile,
+                cand_p.chi_count + cand_p.pon_count + cand_p.kong_count,
+            ):
+                print(
+                    f"\n  {cand_idx}胡！（{player} 放槍 {n_to_chinese(discard_tile)}）"
+                )
+                return
+
         # 檢查其他三家是否自動明槓（優先於碰，AI_AUTO_KONG 控制）
         kong_player: int | None = None
         if AI_AUTO_KONG:
