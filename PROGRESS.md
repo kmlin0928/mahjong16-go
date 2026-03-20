@@ -8,7 +8,7 @@
 
 ## 任務清單
 
-### 1. [/] main() 改為回傳 (winner: int | None, dealer_idx: int)
+### 1. [v] main() 改為回傳 (winner: int | None, dealer_idx: int)
 
 - **檔案範圍**：`mahjong.py`（`main()` 函式簽名與所有 return 點）
 - **摘要**：
@@ -19,8 +19,9 @@
   - 和局：`return None, dealer_idx`
   - 若 `dealer_idx_override` 有值，跳過局風隨機，直接以 override 當莊家
   - 連莊時，顯示標題加上「（連莊 N 次）」
+- **346924b** refactor(mahjong-py): main() 改為回傳 (winner, dealer_idx)，新增 dealer_idx_override/consecutive 參數
 
-### 2. [ ] __main__ 改為連莊迴圈
+### 2. [/] __main__ 改為連莊迴圈
 
 - **檔案範圍**：`mahjong.py`（`if __name__ == "__main__":` 段落）
 - **摘要**：

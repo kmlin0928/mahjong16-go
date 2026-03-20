@@ -1733,4 +1733,21 @@ if __name__ == "__main__":
             assert "[" in _out, "有吃/碰時，輸出應含面牌組 [...]"
         print(f"  ✓ 一局完整執行（{_elapsed:.2f}s），結尾：{_last.strip()!r}")
         print(f"  ✓ 含吃={has_chi} 含碰={has_pon}")
-    main()
+
+    # 連莊迴圈
+    dealer_override: int | None = None
+    consec = 0
+    while True:
+        winner, dealer_idx = main(dealer_idx_override=dealer_override, consecutive=consec)
+        if winner == dealer_idx:
+            print(f"\n莊家（座位{dealer_idx}）胡牌！連莊！")
+        elif winner is None:
+            print(f"\n和局！連莊！")
+        else:
+            print(f"\n下莊（座位{winner} 胡牌）。結束。")
+            break
+        ans = input("繼續下一局？(y/n) ").strip().lower()
+        if ans != "y":
+            break
+        consec += 1
+        dealer_override = dealer_idx
