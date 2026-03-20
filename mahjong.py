@@ -30,10 +30,15 @@ WIND_KINDS = WIND_COUNT                                     # 4
 DRAGON_KINDS = DRAGON_COUNT                                 # 3
 HONOR_KINDS = WIND_KINDS + DRAGON_KINDS                     # 7（字牌合計）
 
+# 玩家模式
+HUMAN_PLAYER: int = 0        # 人類玩家席位（0–3），其餘為 AI
+
 # AI 行為開關
 AI_AUTO_KONG: bool = False   # 明槓：預設不自動槓，改為 True 可啟用
 PAUSE_ON_MELD: bool = False  # 吃/碰/槓後暫停，等待使用者按 y 繼續（互動模式）
 RUN_TESTS: bool = False      # 執行 __main__ 驗收測試（True 時才跑，False 直接對局）
+
+_SEAT_WIND_NAMES = ["東", "南", "西", "北"]
 
 _SUIT_NAMES = ["筒", "索", "萬"]
 _WIND_NAMES = ["東", "南", "西", "北"]
@@ -1424,6 +1429,15 @@ def main() -> None:
     """
     m = Mahjong(n_hand=16)
     m.init_deal()
+
+    # 隨機分配門風（東南西北）
+    seat_winds = _random.sample(_SEAT_WIND_NAMES, 4)
+    human_wind = seat_winds[HUMAN_PLAYER]
+    print(f"\n【你是 {human_wind}（座位 {HUMAN_PLAYER}）】")
+    for i, w in enumerate(seat_winds):
+        label = "← 你" if i == HUMAN_PLAYER else ""
+        print(f"  座位{i} {w}{label}")
+
     m.show_bonus()
     print()
 
@@ -1436,7 +1450,8 @@ def main() -> None:
         if not skip_draw:
             # 正常輪次：摸牌
             drawn = m.deal_one()
-            print(f"\n{player}摸 {n_to_chinese(drawn)}", end="")
+            you = "（你）" if player == HUMAN_PLAYER else ""
+            print(f"\n{player}摸{you} {n_to_chinese(drawn)}", end="")
             p.hand.append(drawn)
             m._draw_bonus(p, len(p.hand) - 1)
             drawn = p.hand[-1]      # 補花後的實際摸入牌
