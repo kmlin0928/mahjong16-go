@@ -1814,6 +1814,9 @@ def main(
                     ans = input(f"\n自摸胡！宣胡？(y/n) ").strip().lower()
                     if ans == "y":
                         print(f"\n{player}自摸胡 {n_to_chinese(drawn)}")
+                        for t in p.hand[:-1]:
+                            print(f" {n_to_chinese(t)}", end="")
+                        print()
                         _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds, is_kong_flower=after_supplement, is_last_tile=last_tile_drawn, is_first_round=first_round, tenhou_label=tenhou_flags.get(player, ""))
                         _total = sum(v for _, v in _score)
                         _detail = " ".join(f"{n}+{v}" for n, v in _score)
@@ -1821,9 +1824,8 @@ def main(
                         return player, dealer_idx
                 else:
                     print(f"\n{player}胡", end="")
-                    if not contest_mode:
-                        for t in p.hand[:-1]:
-                            print(f" {n_to_chinese(t)}", end="")
+                    for t in p.hand[:-1]:
+                        print(f" {n_to_chinese(t)}", end="")
                     print()
                     _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds, is_kong_flower=after_supplement, is_last_tile=last_tile_drawn, is_first_round=first_round, tenhou_label=tenhou_flags.get(player, ""))
                     _total = sum(v for _, v in _score)
@@ -1874,6 +1876,9 @@ def main(
                                     f"\n  {rob_idx}搶槓胡！（{player} 加槓 {n_to_chinese(drawn)}）"
                                 )
                                 rob_p.hand.append(drawn)
+                                for t in rob_p.hand[:-1]:
+                                    print(f" {n_to_chinese(t)}", end="")
+                                print()
                                 _score = score_hand(
                                     rob_idx, dealer_idx, consecutive,
                                     False, rob_p, drawn,
@@ -1903,9 +1908,8 @@ def main(
                 for _i, _t in enumerate(p.hand):
                     if _t < BONUS_START and is_win_ext(p.hand[:_i] + p.hand[_i + 1:], _t, 0):
                         print(f"\n{player}天胡 {n_to_chinese(_t)}")
-                        if not contest_mode:
-                            for t in p.hand:
-                                print(f" {n_to_chinese(t)}", end="")
+                        for t in p.hand:
+                            print(f" {n_to_chinese(t)}", end="")
                         print()
                         _score = score_hand(player, dealer_idx, consecutive, True, p, _t, game_wind, seat_winds, is_first_round=True, tenhou_label=tenhou_flags.get(player, ""))
                         _total = sum(v for _, v in _score)
@@ -2006,6 +2010,9 @@ def main(
                 )
                 _cp = m.players[cand_idx]
                 _cp.hand.append(discard_tile)   # 暫加入以便 score_hand 分析
+                for t in _cp.hand[:-1]:
+                    print(f" {n_to_chinese(t)}", end="")
+                print()
                 _score = score_hand(cand_idx, dealer_idx, consecutive, False, _cp, discard_tile, game_wind, seat_winds, is_last_tile=last_tile_drawn, is_first_round=first_round, tenhou_label=tenhou_flags.get(cand_idx, ""))
                 _cp.hand.pop()                  # 還原
                 _total = sum(v for _, v in _score)
