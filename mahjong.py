@@ -1557,8 +1557,11 @@ def score_hand(
     suits_used = {_suit_of(t) for t in all_non_bonus if _suit_of(t) is not None}
     has_honor = any(t >= SUITED_END for t in all_non_bonus)
 
+    # 字一色：全部非花牌均為字牌（無任何數牌），圈風/自風/三元牌可複合計
+    if all_non_bonus and not suits_used:
+        result.append(("字一色", 8))
     # 清一色：單一數牌花色，無字牌
-    if len(suits_used) == 1 and not has_honor:
+    elif len(suits_used) == 1 and not has_honor:
         result.append(("清一色", 8))
     # 混一色：單一數牌花色 + 字牌，無其他花色
     elif len(suits_used) == 1 and has_honor:
@@ -1573,9 +1576,11 @@ def score_hand(
         if pairs_in_hand == 1 and all_valid:
             result.append(("碰碰胡", 4))
 
-    # 三暗刻 / 四暗刻：手牌中同種牌出現 ≥3 張的種類數（暗刻候選）
+    # 三暗刻 / 四暗刻 / 五暗刻：手牌中同種牌出現 ≥3 張的種類數（暗刻候選）
     concealed_pungs = sum(1 for c in _counts_hand.values() if c >= 3)
-    if concealed_pungs >= 4 and not has_meld:
+    if concealed_pungs >= 5 and not has_meld:
+        result.append(("五暗刻", 5))
+    elif concealed_pungs >= 4 and not has_meld:
         result.append(("四暗刻", 5))
     elif concealed_pungs >= 3:
         result.append(("三暗刻", 2))
