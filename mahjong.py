@@ -1925,9 +1925,6 @@ def main(
         else:
             # AI 計算聽牌與出牌
             calculate_gates(m, p, ai)
-            print(f" 打後聽牌:", end="")
-            for gate_idx, chance in ai.gates.items():
-                print(f" {n_to_chinese(p.hand[gate_idx])}={chance}", end="")
 
             # 決定出牌（傳入 players 啟用 DangerLevel 策略）
             discard_idx, discard_level = decide_play(p, ai, m.players)  # type: ignore[misc]
