@@ -1449,6 +1449,7 @@ def score_hand(
     seat_winds: list[str],
     is_rob_kong: bool = False,
     is_kong_flower: bool = False,
+    is_last_tile: bool = False,
 ) -> list[tuple[str, int]]:
     """計算胡牌台數明細。
 
@@ -1463,6 +1464,7 @@ def score_hand(
         seat_winds:     四家門風列表（seat_winds[winner] = 自風）
         is_rob_kong:    True = 搶槓胡，額外 +1 台
         is_kong_flower: True = 槓上開花（補花/加槓補牌後自摸），額外 +1 台
+        is_last_tile:   True = 牌堆最後一張牌（自摸→海底撈月+1；放槍→河底撈魚+1）
 
     Returns:
         (規則名稱, 台數) 的列表，台數均為正整數。
@@ -1482,6 +1484,11 @@ def score_hand(
         result.append(("搶槓", 1))
     if is_kong_flower:
         result.append(("槓上開花", 1))
+    if is_last_tile:
+        if is_tsumo:
+            result.append(("海底撈月", 1))
+        else:
+            result.append(("河底撈魚", 1))
     if winner == dealer_idx:
         result.append(("莊家", 1))
     if consecutive >= 1:
@@ -1687,6 +1694,7 @@ def main(
     player = dealer_idx
     skip_draw = True    # 莊家首輪跳過摸牌，直接出牌
     after_supplement = False  # 是否為補花/加槓後補摸（跨回合保持，用於槓上開花判定）
+    last_tile_drawn = False   # 是否剛摸完牌堆最後一張（用於海底撈月/河底撈魚判定）
     while m.remain:
         p = m.players[player]
         ai = m.ai[player]
@@ -1694,7 +1702,10 @@ def main(
         if not skip_draw:
             # 正常輪次：摸牌
             after_supplement = False  # 每次正常摸牌重置
+            last_tile_drawn = False   # 每次正常摸牌重置
             drawn = m.deal_one()
+            if m.remain == 0:
+                last_tile_drawn = True  # 剛摸到牌堆最後一張
             _orig_drawn = drawn
             you = "（你）" if player == HUMAN_PLAYER else ""
             print(f"\n{player}摸{you} {n_to_chinese(drawn)}", end="")
@@ -1710,7 +1721,7 @@ def main(
                     ans = input(f"\n自摸胡！宣胡？(y/n) ").strip().lower()
                     if ans == "y":
                         print(f"\n{player}自摸胡 {n_to_chinese(drawn)}")
-                        _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds, is_kong_flower=after_supplement)
+                        _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds, is_kong_flower=after_supplement, is_last_tile=last_tile_drawn)
                         _total = sum(v for _, v in _score)
                         _detail = " ".join(f"{n}+{v}" for n, v in _score)
                         print(f"台數明細：{_detail} = 共 {_total} 台")
@@ -1720,7 +1731,7 @@ def main(
                     for t in p.hand[:-1]:
                         print(f" {n_to_chinese(t)}", end="")
                     print()
-                    _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds, is_kong_flower=after_supplement)
+                    _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds, is_kong_flower=after_supplement, is_last_tile=last_tile_drawn)
                     _total = sum(v for _, v in _score)
                     _detail = " ".join(f"{n}+{v}" for n, v in _score)
                     print(f"台數明細：{_detail} = 共 {_total} 台")
@@ -1863,7 +1874,7 @@ def main(
                 )
                 _cp = m.players[cand_idx]
                 _cp.hand.append(discard_tile)   # 暫加入以便 score_hand 分析
-                _score = score_hand(cand_idx, dealer_idx, consecutive, False, _cp, discard_tile, game_wind, seat_winds)
+                _score = score_hand(cand_idx, dealer_idx, consecutive, False, _cp, discard_tile, game_wind, seat_winds, is_last_tile=last_tile_drawn)
                 _cp.hand.pop()                  # 還原
                 _total = sum(v for _, v in _score)
                 _detail = " ".join(f"{n}+{v}" for n, v in _score)
