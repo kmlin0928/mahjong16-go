@@ -854,6 +854,28 @@ def can_kong(hand: list[int], tile: int) -> tuple[int, int, int] | None:
     return None
 
 
+def can_add_to_pon(drawn: int, melds: list[list[int]]) -> int | None:
+    """偵測摸入的牌是否可加入已碰刻子（加槓）。
+
+    掃描 melds 中長度恰好為 3 且三張同牌面種類的刻子；
+    若 drawn 的牌面種類相符，回傳該 meld 的索引，否則回傳 None。
+
+    Args:
+        drawn: 剛摸入的牌號
+        melds: 玩家已亮出的面牌組列表
+
+    Returns:
+        可加槓的 meld 索引；無則回傳 None
+    """
+    if drawn >= BONUS_START:
+        return None  # 花牌不可加槓
+    kind = drawn // COPIES
+    for i, meld in enumerate(melds):
+        if len(meld) == 3 and all(t // COPIES == kind for t in meld):
+            return i
+    return None
+
+
 # ---------------------------------------------------------------------------
 # AI 放槍預防輔助函式
 # ---------------------------------------------------------------------------

@@ -1,0 +1,60 @@
+# PROGRESS.md
+
+任務：實作加槓與搶槓 — 摸牌後可加槓，掃描搶槓胡牌
+目標檔案：mahjong.py
+狀態說明：[ ] 未開始 | [/] 進行中 | [v] 完成
+
+---
+
+## 任務清單
+
+### 1. [/] can_add_to_pon() — 偵測手牌中是否有可加槓的牌
+
+- **檔案範圍**：`mahjong.py`（吃牌輔助函式區）
+- **摘要**：
+  - 新增 `can_add_to_pon(drawn: int, melds: list[list[int]]) -> int | None`
+  - 若 drawn 的牌面種類（drawn // COPIES）與某個已碰刻子（len=3，且 3 張同 kind）相符，回傳該 meld 的索引；否則回傳 None
+
+- **驗收**：手動單元測試：有碰東(108,112,116) 的刻子 meld，摸入 120（東第4張）→ 回傳 meld 索引
+
+### 2. [ ] 主迴圈加入加槓判定（含人機詢問）
+
+- **檔案範圍**：`mahjong.py`（`main()` 摸牌後、判胡之後）
+- **摘要**：
+  - 摸牌後、胡牌判定後，呼叫 `can_add_to_pon(drawn, p.melds)`
+  - 若有可加槓的刻子：
+    - 人類玩家：詢問「加槓 X？(y/n)」
+    - AI 玩家：依 `AI_AUTO_KONG` 常數決定（True 則加，False 跳過）
+  - 執行加槓：刻子 meld 加入第 4 張、手牌移除 drawn、`p.kong_count += 1`
+  - 加槓後執行搶槓掃描（見 Task 3），若無搶槓則正常補摸一張（deal_one）
+
+- **驗收**：對局中出現加槓後，輸出「X加槓 牌名」並繼續摸牌
+
+### 3. [ ] 加槓後掃描搶槓，搶槓勝出時加 +1 台
+
+- **檔案範圍**：`mahjong.py`（Task 2 加槓執行後立即）
+- **摘要**：
+  - 加槓完成後，掃描其他三家 `is_win_ext(cand.hand, add_tile, meld_count))`
+  - 若任一家可胡：
+    - 顯示「Y搶槓胡！（X 加槓 牌名）」
+    - 呼叫 score_hand() 並加入 搶槓(+1) 到結果
+    - return (winner, dealer_idx)
+  - 人類玩家搶槓需詢問 y/n
+
+- **驗收**：模擬搶槓情境，輸出正確標注
+
+### 4. [ ] score_hand() 新增「搶槓」+1 台的旗標
+
+- **檔案範圍**：`mahjong.py`（`score_hand()` 函式簽名）
+- **摘要**：
+  - `score_hand()` 新增參數 `is_rob_kong: bool = False`
+  - 若 True：`result.append(("搶槓", 1))`
+
+- **驗收**：搶槓胡時台數明細出現「搶槓+1」
+
+---
+
+## 狀態更新規則
+- [ ] 未開始
+- [/] 進行中
+- [v] 完成（完成後附 Commit 編號前7碼與訊息摘要）
