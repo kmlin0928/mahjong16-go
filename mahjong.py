@@ -1451,6 +1451,7 @@ def score_hand(
     is_kong_flower: bool = False,
     is_last_tile: bool = False,
     is_first_round: bool = False,
+    tenhou_label: str = "",
 ) -> list[tuple[str, int]]:
     """計算胡牌台數明細。
 
@@ -1467,6 +1468,7 @@ def score_hand(
         is_kong_flower: True = 槓上開花（補花/加槓補牌後自摸），額外 +1 台
         is_last_tile:   True = 牌堆最後一張牌（自摸→海底撈月+1；放槍→河底撈魚+1）
         is_first_round: True = 首巡胡牌（天胡/地胡/人胡+16，分別過濾不求/自摸/門清）
+        tenhou_label:   "天聽"→+8 或 "地聽"→+4；空字串表示無天地聽加成
 
     Returns:
         (規則名稱, 台數) 的列表，台數均為正整數。
@@ -1653,6 +1655,10 @@ def score_hand(
     if not is_tsumo and len(p.hand) == 1:
         result.append(("全求", 2))
 
+    # 天聽 / 地聽：初始或首次棄牌後聽牌，胡牌時計入
+    if tenhou_label:
+        result.append((tenhou_label, 8 if tenhou_label == "天聽" else 4))
+
     # 天胡 / 地胡 / 人胡：首巡胡牌，清 16 台（移除被取代的基礎台數項目）
     if is_first_round and not has_meld:
         if is_tsumo and winner == dealer_idx:
@@ -1669,6 +1675,32 @@ def score_hand(
             result.append(("人胡", 16))
 
     return result
+
+
+def _check_tenpai_initial(hand: list[int]) -> bool:
+    """初始手牌是否已聽（摸到任一種牌即可胡）。
+
+    Args:
+        hand: 16 張（閒家）或 17 張（莊家）手牌列表。
+              16 張：直接測試任一牌面加入後是否胡牌。
+              17 張：逐一嘗試棄出每張，剩餘 16 張再測試。
+
+    Returns:
+        已聽回傳 True，否則 False。
+    """
+    if len(hand) == 16:
+        return any(
+            is_win_ext(hand, k * COPIES, 0)
+            for k in range(SUITED_KINDS + HONOR_KINDS)
+        )
+    # 17 張（莊家）：嘗試每張棄牌後是否聽牌
+    return any(
+        any(
+            is_win_ext(hand[:i] + hand[i + 1:], k * COPIES, 0)
+            for k in range(SUITED_KINDS + HONOR_KINDS)
+        )
+        for i in range(len(hand))
+    )
 
 
 def main(
@@ -1725,12 +1757,19 @@ def main(
     m.show_bonus()
     print()
 
+    # 天聽偵測：補花完成後立即掃描各家是否已聽
+    tenhou_flags: dict[int, str] = {}
+    for _pi in range(4):
+        if _check_tenpai_initial(m.players[_pi].hand):
+            tenhou_flags[_pi] = "天聽"
+
     player = dealer_idx
     skip_draw = True    # 莊家首輪跳過摸牌，直接出牌
     after_supplement = False  # 是否為補花/加槓後補摸（跨回合保持，用於槓上開花判定）
     last_tile_drawn = False   # 是否剛摸完牌堆最後一張（用於海底撈月/河底撈魚判定）
     first_round = True        # 首巡旗標（用於天胡/地胡/人胡判定）
     first_turns_done: set[int] = set()  # 已完成首次棄牌的玩家集合
+    # tenhou_flags 在 show_bonus() 後才初始化（見下方）
     while m.remain:
         p = m.players[player]
         ai = m.ai[player]
@@ -1757,7 +1796,7 @@ def main(
                     ans = input(f"\n自摸胡！宣胡？(y/n) ").strip().lower()
                     if ans == "y":
                         print(f"\n{player}自摸胡 {n_to_chinese(drawn)}")
-                        _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds, is_kong_flower=after_supplement, is_last_tile=last_tile_drawn, is_first_round=first_round)
+                        _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds, is_kong_flower=after_supplement, is_last_tile=last_tile_drawn, is_first_round=first_round, tenhou_label=tenhou_flags.get(player, ""))
                         _total = sum(v for _, v in _score)
                         _detail = " ".join(f"{n}+{v}" for n, v in _score)
                         print(f"台數明細：{_detail} = 共 {_total} 台")
@@ -1767,7 +1806,7 @@ def main(
                     for t in p.hand[:-1]:
                         print(f" {n_to_chinese(t)}", end="")
                     print()
-                    _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds, is_kong_flower=after_supplement, is_last_tile=last_tile_drawn, is_first_round=first_round)
+                    _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds, is_kong_flower=after_supplement, is_last_tile=last_tile_drawn, is_first_round=first_round, tenhou_label=tenhou_flags.get(player, ""))
                     _total = sum(v for _, v in _score)
                     _detail = " ".join(f"{n}+{v}" for n, v in _score)
                     print(f"台數明細：{_detail} = 共 {_total} 台")
@@ -1820,6 +1859,7 @@ def main(
                                     rob_idx, dealer_idx, consecutive,
                                     False, rob_p, drawn,
                                     game_wind, seat_winds, is_rob_kong=True,
+                                    tenhou_label=tenhou_flags.get(rob_idx, ""),
                                 )
                                 rob_p.hand.pop()
                                 _total = sum(v for _, v in _score)
@@ -1847,7 +1887,7 @@ def main(
                         for t in p.hand:
                             print(f" {n_to_chinese(t)}", end="")
                         print()
-                        _score = score_hand(player, dealer_idx, consecutive, True, p, _t, game_wind, seat_winds, is_first_round=True)
+                        _score = score_hand(player, dealer_idx, consecutive, True, p, _t, game_wind, seat_winds, is_first_round=True, tenhou_label=tenhou_flags.get(player, ""))
                         _total = sum(v for _, v in _score)
                         _detail = " ".join(f"{n}+{v}" for n, v in _score)
                         print(f"台數明細：{_detail} = 共 {_total} 台")
@@ -1909,6 +1949,16 @@ def main(
         for other in range(1, 4):
             m.players[(player + other) % 4].add_seen(discard_tile)
 
+        # 地聽偵測：首次棄牌後手牌仍聽牌（無副露、尚無天聽標記）
+        if (
+            first_round
+            and player not in first_turns_done
+            and not (p.chi_count + p.pon_count + p.kong_count)
+            and player not in tenhou_flags
+            and _check_tenpai_initial(p.hand)
+        ):
+            tenhou_flags[player] = "地聽"
+
         # 首巡追蹤：各玩家完成首次棄牌後標記；全員完成則結束首巡
         if first_round:
             first_turns_done.add(player)
@@ -1929,7 +1979,7 @@ def main(
                 )
                 _cp = m.players[cand_idx]
                 _cp.hand.append(discard_tile)   # 暫加入以便 score_hand 分析
-                _score = score_hand(cand_idx, dealer_idx, consecutive, False, _cp, discard_tile, game_wind, seat_winds, is_last_tile=last_tile_drawn, is_first_round=first_round)
+                _score = score_hand(cand_idx, dealer_idx, consecutive, False, _cp, discard_tile, game_wind, seat_winds, is_last_tile=last_tile_drawn, is_first_round=first_round, tenhou_label=tenhou_flags.get(cand_idx, ""))
                 _cp.hand.pop()                  # 還原
                 _total = sum(v for _, v in _score)
                 _detail = " ".join(f"{n}+{v}" for n, v in _score)
@@ -1965,6 +2015,7 @@ def main(
                 if PAUSE_ON_MELD and cand_idx != HUMAN_PLAYER:
                     input("  [槓] 按 y + Enter 繼續: ")
                 first_round = False  # 槓牌後首巡失效
+                tenhou_flags.pop(cand_idx, None)  # 槓牌者天/地聽失效
                 # 槓後正常摸牌（不設 skip_draw），玩家順序改為槓牌家
                 player = cand_idx
                 kong_player = cand_idx
@@ -1995,6 +2046,7 @@ def main(
                     if PAUSE_ON_MELD and cand_idx != HUMAN_PLAYER:
                         input("  [碰] 按 y + Enter 繼續: ")
                     first_round = False  # 碰牌後首巡失效
+                    tenhou_flags.pop(cand_idx, None)  # 碰牌者天/地聽失效
                     skip_draw = True
                     player = cand_idx
                     pon_player = cand_idx
@@ -2063,6 +2115,7 @@ def main(
                     if PAUSE_ON_MELD and next_idx != HUMAN_PLAYER:
                         input("  [吃] 按 y + Enter 繼續: ")
                     first_round = False  # 吃牌後首巡失效
+                    tenhou_flags.pop(next_idx, None)  # 吃牌者天/地聽失效
                     skip_draw = True
                     player = next_idx
                 else:
