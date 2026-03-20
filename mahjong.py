@@ -1466,6 +1466,11 @@ def score_hand(
 
     Returns:
         (規則名稱, 台數) 的列表，台數均為正整數。
+        基礎組合（is_tsumo × has_meld）：
+            - 不求 +2：無副露自摸胡（門清 + 自摸合計）
+            - 自摸 +1：有副露自摸胡
+            - 門清 +1：無副露放槍胡
+            - 半求 +1：有副露放槍胡
     """
     result: list[tuple[str, int]] = []
     seat_wind = seat_winds[winner]

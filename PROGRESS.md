@@ -8,7 +8,7 @@
 
 ## 任務清單
 
-### 1. [/] score_hand() 補上半求判斷
+### 1. [v] score_hand() 補上半求判斷
 
 - **檔案範圍**：`mahjong.py`（`score_hand()` 基礎台數區塊，自摸/門清段落）
 - **摘要**：
@@ -22,8 +22,9 @@
   - 在 `else`（放槍胡）分支補上 `elif has_meld: result.append(("半求", 1))`
 - **台數依據**：有副露放槍胡 +1 台
 - **驗收**：有碰/吃/槓後放槍胡 → 台數出現「半求+1」；門清放槍依然為「門清+1」
+- **a7403b8** feat(mahjong-py): 實作半求 +1 台（有副露放槍胡）
 
-### 2. [ ] 更新 score_hand() docstring
+### 2. [/] 更新 score_hand() docstring
 
 - **檔案範圍**：`mahjong.py`（`score_hand()` 函式 docstring）
 - **摘要**：在 Returns 說明中補充四種自摸/放槍組合（不求/自摸/門清/半求）一覽
