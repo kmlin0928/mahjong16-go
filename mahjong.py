@@ -1703,6 +1703,13 @@ def _check_tenpai_initial(hand: list[int]) -> bool:
     )
 
 
+def player_label(player: int) -> str:
+    """回傳玩家相對於人類玩家的稱謂：你／下家／對家／上家。"""
+    if player == HUMAN_PLAYER:
+        return "你"
+    return {1: "下家", 2: "對家", 3: "上家"}[(player - HUMAN_PLAYER) % 4]
+
+
 def main(
     dealer_idx_override: int | None = None,
     consecutive: int = 0,
@@ -1799,9 +1806,8 @@ def main(
             if m.remain == 0:
                 last_tile_drawn = True  # 剛摸到牌堆最後一張
             _orig_drawn = drawn
-            you = "（你）" if player == HUMAN_PLAYER else ""
             _show_tile = not contest_mode or player == HUMAN_PLAYER
-            print(f"\n{player}摸{you}{' ' + n_to_chinese(drawn) if _show_tile else ''}", end="")
+            print(f"\n{player_label(player)}摸{' ' + n_to_chinese(drawn) if _show_tile else ''}", end="")
             p.hand.append(drawn)
             m._draw_bonus(p, len(p.hand) - 1)
             drawn = p.hand[-1]      # 補花後的實際摸入牌
@@ -1813,7 +1819,7 @@ def main(
                 if player == HUMAN_PLAYER:
                     ans = input(f"\n自摸胡！宣胡？(y/n) ").strip().lower()
                     if ans == "y":
-                        print(f"\n{player}自摸胡 {n_to_chinese(drawn)}")
+                        print(f"\n{player_label(player)}自摸胡 {n_to_chinese(drawn)}")
                         for t in p.hand[:-1]:
                             print(f" {n_to_chinese(t)}", end="")
                         print()
@@ -1823,7 +1829,7 @@ def main(
                         print(f"台數明細：{_detail} = 共 {_total} 台")
                         return player, dealer_idx
                 else:
-                    print(f"\n{player}胡", end="")
+                    print(f"\n{player_label(player)}胡", end="")
                     for t in p.hand[:-1]:
                         print(f" {n_to_chinese(t)}", end="")
                     print()
@@ -1853,7 +1859,7 @@ def main(
                     p.melds[add_meld_idx].append(drawn)
                     p.hand.remove(drawn)
                     p.kong_count += 1
-                    print(f"\n  {player}加槓 {n_to_chinese(drawn)}", end="")
+                    print(f"\n  {player_label(player)}加槓 {n_to_chinese(drawn)}", end="")
 
                     # 搶槓掃描：其他三家是否可胡
                     robbed = False
@@ -1873,7 +1879,7 @@ def main(
                                 do_rob = ans2 == "y"
                             if do_rob:
                                 print(
-                                    f"\n  {rob_idx}搶槓胡！（{player} 加槓 {n_to_chinese(drawn)}）"
+                                    f"\n  {player_label(rob_idx)}搶槓胡！（{player_label(player)} 加槓 {n_to_chinese(drawn)}）"
                                 )
                                 rob_p.hand.append(drawn)
                                 for t in rob_p.hand[:-1]:
@@ -1907,7 +1913,7 @@ def main(
             if first_round and player == dealer_idx and not (p.chi_count + p.pon_count + p.kong_count):
                 for _i, _t in enumerate(p.hand):
                     if _t < BONUS_START and is_win_ext(p.hand[:_i] + p.hand[_i + 1:], _t, 0):
-                        print(f"\n{player}天胡 {n_to_chinese(_t)}")
+                        print(f"\n{player_label(player)}天胡 {n_to_chinese(_t)}")
                         for t in p.hand:
                             print(f" {n_to_chinese(t)}", end="")
                         print()
@@ -1917,7 +1923,7 @@ def main(
                         print(f"台數明細：{_detail} = 共 {_total} 台")
                         return player, dealer_idx
             skip_draw = False
-            print(f"\n{player}出牌", end="")
+            print(f"\n{player_label(player)}出牌", end="")
 
         # 棄牌前將手牌由小到大排列（方便閱讀與選牌）
         p.hand.sort()
@@ -1927,9 +1933,8 @@ def main(
             print()
             for i in range(4):
                 opp = (player + i) % 4
-                you_mark = "(你)" if opp == HUMAN_PLAYER else ""
                 opp_discards = " ".join(n_to_chinese(t) for t in m.players[opp].discards)
-                print(f"  P{opp}{you_mark} 棄: {opp_discards}")
+                print(f"  {player_label(opp)} 棄: {opp_discards}")
             print("  你的手牌：")
             hand_display = "  " + "  ".join(
                 f"[{idx}]{n_to_chinese(t)}" for idx, t in enumerate(p.hand)
@@ -1944,7 +1949,7 @@ def main(
             discard_tile = p.hand[discard_idx]
             p.hand[discard_idx] = p.hand[-1]
             p.hand.pop()
-            print(f"{player}打 {n_to_chinese(discard_tile)}_", end="")
+            print(f"{player_label(player)}打 {n_to_chinese(discard_tile)}_", end="")
             for t in p.hand:
                 print(f" {n_to_chinese(t)}", end="")
         else:
@@ -1960,7 +1965,7 @@ def main(
 
             # 拆牌：被迫棄出 EXTREMELY_DANGEROUS 牌（湊牌）
             tear = "（拆牌）" if discard_level == DangerLevel.EXTREMELY_DANGEROUS else ""
-            print(f"\n{player}打 {n_to_chinese(discard_tile)}{tear}_", end="")
+            print(f"\n{player_label(player)}打 {n_to_chinese(discard_tile)}{tear}_", end="")
             if not contest_mode:
                 for t in p.hand:
                     print(f" {n_to_chinese(t)}", end="")
@@ -2006,7 +2011,7 @@ def main(
                 cand_p.chi_count + cand_p.pon_count + cand_p.kong_count,
             ):
                 print(
-                    f"\n  {cand_idx}胡！（{player} 放槍 {n_to_chinese(discard_tile)}）"
+                    f"\n  {player_label(cand_idx)}胡！（{player_label(player)} 放槍 {n_to_chinese(discard_tile)}）"
                 )
                 _cp = m.players[cand_idx]
                 _cp.hand.append(discard_tile)   # 暫加入以便 score_hand 分析
@@ -2042,7 +2047,7 @@ def main(
                 _do_meld(m, player, cand_idx, discard_tile, [ta, tb, tc])
                 cand_p.kong_count += 1
                 print(
-                    f"\n  {cand_idx}槓 {n_to_chinese(discard_tile)}"
+                    f"\n  {player_label(cand_idx)}槓 {n_to_chinese(discard_tile)}"
                     f"（{n_to_chinese(ta)} {n_to_chinese(tb)} {n_to_chinese(tc)}）",
                     end="",
                 )
@@ -2073,7 +2078,7 @@ def main(
                     _do_meld(m, player, cand_idx, discard_tile, [ta, tb])
                     cand_p.pon_count += 1
                     print(
-                        f"\n  {cand_idx}碰 {n_to_chinese(discard_tile)}"
+                        f"\n  {player_label(cand_idx)}碰 {n_to_chinese(discard_tile)}"
                         f"（{n_to_chinese(ta)} {n_to_chinese(tb)}）",
                         end="",
                     )
@@ -2142,7 +2147,7 @@ def main(
                     _do_meld(m, player, next_idx, discard_tile, [chosen_ta, chosen_tb])
                     np.chi_count += 1
                     print(
-                        f"\n  {next_idx}吃 {n_to_chinese(discard_tile)}"
+                        f"\n  {player_label(next_idx)}吃 {n_to_chinese(discard_tile)}"
                         f"（{n_to_chinese(chosen_ta)} {n_to_chinese(chosen_tb)}）",
                         end="",
                     )
