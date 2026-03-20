@@ -1800,7 +1800,8 @@ def main(
                 last_tile_drawn = True  # 剛摸到牌堆最後一張
             _orig_drawn = drawn
             you = "（你）" if player == HUMAN_PLAYER else ""
-            print(f"\n{player}摸{you} {n_to_chinese(drawn)}", end="")
+            _show_tile = not contest_mode or player == HUMAN_PLAYER
+            print(f"\n{player}摸{you}{' ' + n_to_chinese(drawn) if _show_tile else ''}", end="")
             p.hand.append(drawn)
             m._draw_bonus(p, len(p.hand) - 1)
             drawn = p.hand[-1]      # 補花後的實際摸入牌
@@ -1820,8 +1821,9 @@ def main(
                         return player, dealer_idx
                 else:
                     print(f"\n{player}胡", end="")
-                    for t in p.hand[:-1]:
-                        print(f" {n_to_chinese(t)}", end="")
+                    if not contest_mode:
+                        for t in p.hand[:-1]:
+                            print(f" {n_to_chinese(t)}", end="")
                     print()
                     _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds, is_kong_flower=after_supplement, is_last_tile=last_tile_drawn, is_first_round=first_round, tenhou_label=tenhou_flags.get(player, ""))
                     _total = sum(v for _, v in _score)
@@ -1901,8 +1903,9 @@ def main(
                 for _i, _t in enumerate(p.hand):
                     if _t < BONUS_START and is_win_ext(p.hand[:_i] + p.hand[_i + 1:], _t, 0):
                         print(f"\n{player}天胡 {n_to_chinese(_t)}")
-                        for t in p.hand:
-                            print(f" {n_to_chinese(t)}", end="")
+                        if not contest_mode:
+                            for t in p.hand:
+                                print(f" {n_to_chinese(t)}", end="")
                         print()
                         _score = score_hand(player, dealer_idx, consecutive, True, p, _t, game_wind, seat_winds, is_first_round=True, tenhou_label=tenhou_flags.get(player, ""))
                         _total = sum(v for _, v in _score)
@@ -1954,8 +1957,9 @@ def main(
             # 拆牌：被迫棄出 EXTREMELY_DANGEROUS 牌（湊牌）
             tear = "（拆牌）" if discard_level == DangerLevel.EXTREMELY_DANGEROUS else ""
             print(f"\n{player}打 {n_to_chinese(discard_tile)}{tear}_", end="")
-            for t in p.hand:
-                print(f" {n_to_chinese(t)}", end="")
+            if not contest_mode:
+                for t in p.hand:
+                    print(f" {n_to_chinese(t)}", end="")
         if p.bonus:
             for t in p.bonus:
                 print(f" 花:{n_to_chinese(t)}", end="")

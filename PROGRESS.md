@@ -17,7 +17,7 @@
 - **驗收**：選 y 時 contest_mode=True 傳入 main()
 - **d3b67a0** feat(mahjong-py): 新增競賽模式詢問並傳入 main()
 
-### 2. [/] 隱藏 AI 初始手牌（show_bonus 階段）
+### 2. [v] 隱藏 AI 初始手牌（show_bonus 階段）
 
 - **檔案範圍**：`mahjong.py`（`m.show_bonus()` 呼叫改為內聯迴圈）
 - **摘要**：
@@ -25,8 +25,9 @@
   - contest_mode + AI 玩家時，以 `redirect_stdout(io.StringIO())` 壓制輸出
   - 仍執行 `_draw_bonus` 與 `add_seen` 的邏輯（保留副作用）
 - **驗收**：contest_mode=True 時，AI 的初始手牌不顯示
+- **0066704** feat(mahjong-py): 競賽模式隱藏 AI 初始手牌（show_bonus 階段）
 
-### 3. [ ] 隱藏 AI 摸牌名稱、剩餘手牌、胡牌手牌
+### 3. [/] 隱藏 AI 摸牌名稱、剩餘手牌、胡牌手牌
 
 - **檔案範圍**：`mahjong.py`（`main()` 主迴圈中 4 處 print 位置）
 - **摘要**：
