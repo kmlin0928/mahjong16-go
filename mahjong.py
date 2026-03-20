@@ -1459,11 +1459,17 @@ def main() -> None:
 
             # 判胡（摸牌後立即判斷；若補花失敗牌堆已空則 drawn 可能是花牌，跳過判胡）
             if drawn < BONUS_START and is_win_ext(p.hand[:-1], drawn, p.chi_count + p.pon_count + p.kong_count):
-                print(f"\n{player}胡", end="")
-                for t in p.hand[:-1]:
-                    print(f" {n_to_chinese(t)}", end="")
-                print()
-                return
+                if player == HUMAN_PLAYER:
+                    ans = input(f"\n自摸胡！宣胡？(y/n) ").strip().lower()
+                    if ans == "y":
+                        print(f"\n{player}自摸胡 {n_to_chinese(drawn)}")
+                        return
+                else:
+                    print(f"\n{player}胡", end="")
+                    for t in p.hand[:-1]:
+                        print(f" {n_to_chinese(t)}", end="")
+                    print()
+                    return
 
             # 牌堆若已空（補花後耗盡），宣告和局
             if not m.remain:
@@ -1473,24 +1479,49 @@ def main() -> None:
             skip_draw = False
             print(f"\n{player}出牌", end="")
 
-        # AI 計算聽牌與出牌
-        calculate_gates(m, p, ai)
-        print(f" 打後聽牌:", end="")
-        for gate_idx, chance in ai.gates.items():
-            print(f" {n_to_chinese(p.hand[gate_idx])}={chance}", end="")
+        # 人類玩家：顯示三家棄牌與標號手牌，互動選牌
+        if player == HUMAN_PLAYER:
+            print()
+            for i in range(1, 4):
+                opp = (player + i) % 4
+                opp_discards = " ".join(n_to_chinese(t) for t in m.players[opp].discards)
+                print(f"  P{opp} 棄: {opp_discards}")
+            print("  你的手牌：")
+            hand_display = "  " + "  ".join(
+                f"[{idx}]{n_to_chinese(t)}" for idx, t in enumerate(p.hand)
+            )
+            print(hand_display)
+            while True:
+                raw = input(f"  選擇棄牌編號 (0–{len(p.hand)-1}): ").strip()
+                if raw.isdigit() and 0 <= int(raw) < len(p.hand):
+                    discard_idx = int(raw)
+                    break
+                print(f"  請輸入 0 到 {len(p.hand)-1} 之間的數字")
+            discard_tile = p.hand[discard_idx]
+            p.hand[discard_idx] = p.hand[-1]
+            p.hand.pop()
+            print(f"{player}打 {n_to_chinese(discard_tile)}_", end="")
+            for t in p.hand:
+                print(f" {n_to_chinese(t)}", end="")
+        else:
+            # AI 計算聽牌與出牌
+            calculate_gates(m, p, ai)
+            print(f" 打後聽牌:", end="")
+            for gate_idx, chance in ai.gates.items():
+                print(f" {n_to_chinese(p.hand[gate_idx])}={chance}", end="")
 
-        # 決定出牌（傳入 players 啟用 DangerLevel 策略）
-        discard_idx, discard_level = decide_play(p, ai, m.players)  # type: ignore[misc]
-        # 將摸入牌換入打出位置（維持 hand 長度 = n_hand - chi_count*2）
-        discard_tile = p.hand[discard_idx]
-        p.hand[discard_idx] = p.hand[-1]
-        p.hand.pop()
+            # 決定出牌（傳入 players 啟用 DangerLevel 策略）
+            discard_idx, discard_level = decide_play(p, ai, m.players)  # type: ignore[misc]
+            # 將摸入牌換入打出位置（維持 hand 長度 = n_hand - chi_count*2）
+            discard_tile = p.hand[discard_idx]
+            p.hand[discard_idx] = p.hand[-1]
+            p.hand.pop()
 
-        # 拆牌：被迫棄出 EXTREMELY_DANGEROUS 牌（湊牌）
-        tear = "（拆牌）" if discard_level == DangerLevel.EXTREMELY_DANGEROUS else ""
-        print(f"\n{player}打 {n_to_chinese(discard_tile)}{tear}_", end="")
-        for t in p.hand:
-            print(f" {n_to_chinese(t)}", end="")
+            # 拆牌：被迫棄出 EXTREMELY_DANGEROUS 牌（湊牌）
+            tear = "（拆牌）" if discard_level == DangerLevel.EXTREMELY_DANGEROUS else ""
+            print(f"\n{player}打 {n_to_chinese(discard_tile)}{tear}_", end="")
+            for t in p.hand:
+                print(f" {n_to_chinese(t)}", end="")
         if p.bonus:
             for t in p.bonus:
                 print(f" 花:{n_to_chinese(t)}", end="")
