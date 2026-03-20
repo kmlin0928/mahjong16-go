@@ -1609,12 +1609,20 @@ def main(
                     ans = input(f"\n自摸胡！宣胡？(y/n) ").strip().lower()
                     if ans == "y":
                         print(f"\n{player}自摸胡 {n_to_chinese(drawn)}")
+                        _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds)
+                        _total = sum(v for _, v in _score)
+                        _detail = " ".join(f"{n}+{v}" for n, v in _score)
+                        print(f"台數明細：{_detail} = 共 {_total} 台")
                         return player, dealer_idx
                 else:
                     print(f"\n{player}胡", end="")
                     for t in p.hand[:-1]:
                         print(f" {n_to_chinese(t)}", end="")
                     print()
+                    _score = score_hand(player, dealer_idx, consecutive, True, p, drawn, game_wind, seat_winds)
+                    _total = sum(v for _, v in _score)
+                    _detail = " ".join(f"{n}+{v}" for n, v in _score)
+                    print(f"台數明細：{_detail} = 共 {_total} 台")
                     return player, dealer_idx
 
             # 牌堆若已空（補花後耗盡），宣告和局
@@ -1691,6 +1699,13 @@ def main(
                 print(
                     f"\n  {cand_idx}胡！（{player} 放槍 {n_to_chinese(discard_tile)}）"
                 )
+                _cp = m.players[cand_idx]
+                _cp.hand.append(discard_tile)   # 暫加入以便 score_hand 分析
+                _score = score_hand(cand_idx, dealer_idx, consecutive, False, _cp, discard_tile, game_wind, seat_winds)
+                _cp.hand.pop()                  # 還原
+                _total = sum(v for _, v in _score)
+                _detail = " ".join(f"{n}+{v}" for n, v in _score)
+                print(f"台數明細：{_detail} = 共 {_total} 台")
                 return cand_idx, dealer_idx
 
         # 檢查其他三家是否明槓（AI_AUTO_KONG 控制；人類玩家詢問 y/n）
