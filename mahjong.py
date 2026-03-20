@@ -1895,6 +1895,9 @@ def main(
             skip_draw = False
             print(f"\n{player}出牌", end="")
 
+        # 棄牌前將手牌由小到大排列（方便閱讀與選牌）
+        p.hand.sort()
+
         # 人類玩家：顯示三家棄牌與標號手牌，互動選牌
         if player == HUMAN_PLAYER:
             print()
