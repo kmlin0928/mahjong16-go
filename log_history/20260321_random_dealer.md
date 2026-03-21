@@ -6,7 +6,8 @@
 ## 任務清單
 
 ### Task 1：mahjong.py — 首局莊家改為隨機（_game_loop + main）
-- [/] 檔案範圍：`mahjong.py`（_game_loop 約 line 1969；main() 約 line 2375）
+- [v] 檔案範圍：`mahjong.py`
+- Commit 1728866：feat(mahjong): 首局莊家改為隨機選取（不再固定為人類玩家）（_game_loop 約 line 1969；main() 約 line 2375）
 - 摘要：
   當 dealer_idx_override 為 None 時，改為 `random.randrange(4)` 取代固定的 `0`；
   兩處均需修改（GameSession._game_loop 與 main() 函式）
