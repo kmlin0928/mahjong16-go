@@ -93,7 +93,7 @@ function _startNewGame(dealerIdx = null, consecutive = 0, seatWinds = null, roun
   setHandEnabled(false);
   hidePrompt();
   const cmd = { cmd: 'new_game', contest: true, consecutive };
-  if (dealerIdx !== null) cmd.dealer_idx = dealerIdx;
+  if (typeof dealerIdx === 'number') cmd.dealer_idx = dealerIdx;
   if (seatWinds !== null) cmd.seat_winds = seatWinds;
   if (roundWind !== null) cmd.game_round_wind = roundWind;
   wsSend(cmd);
