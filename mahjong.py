@@ -2849,6 +2849,35 @@ if __name__ == "__main__":
         print(f"  ✓ 非莊放槍：+{_pao_other_pts} 台（總{_total_b}台）")
         print(f"  ✓ 自摸：莊家放槍 +{_tsumo_pts} 台（不加台）")
 
+        print("\n--- 單元測試：莊家保底1台（自摸 & ron）---")
+        _dealer_hand = [0,1,2, 4,5,6, 8,9,10, 12,13,14, 16,17,18, 72,73]
+        _dealer_tile  = 73
+        _dealer_p     = PlayerState(n_hand=16, hand=_dealer_hand)
+        # 情境 A：莊家自摸勝（winner=dealer=0, is_tsumo=True）
+        _sc_dealer_tsumo = score_hand(
+            winner=0, dealer_idx=0, consecutive=0,
+            is_tsumo=True, p=_dealer_p, winning_tile=_dealer_tile,
+            game_wind=_seat_winds[0], seat_winds=_seat_winds,
+        )
+        # 情境 B：莊家 ron 勝（非莊玩家放槍，winner=dealer=0, is_tsumo=False, pao_idx=1）
+        _dealer_ron_hand = _dealer_hand + []     # 同一副手牌
+        _dealer_ron_p    = PlayerState(n_hand=16, hand=_dealer_ron_hand)
+        _sc_dealer_ron = score_hand(
+            winner=0, dealer_idx=0, consecutive=0,
+            is_tsumo=False, p=_dealer_ron_p, winning_tile=_dealer_tile,
+            game_wind=_seat_winds[0], seat_winds=_seat_winds,
+            pao_idx=1,   # 非莊家放槍
+        )
+        _dt = next((v for n, v in _sc_dealer_tsumo if n == "莊家"), 0)
+        _dr = next((v for n, v in _sc_dealer_ron   if n == "莊家"), 0)
+        assert _dt == 1, f"莊家自摸勝應含莊家+1，實得={_dt}"
+        assert _dr == 1, f"莊家 ron 勝應含莊家+1，實得={_dr}"
+        # 莊家放槍不應觸發（pao_idx=1 ≠ dealer_idx=0）
+        _dr_pao = next((v for n, v in _sc_dealer_ron if n == "莊家放槍"), 0)
+        assert _dr_pao == 0, f"非莊放槍不應觸發莊家放槍，實得={_dr_pao}"
+        print(f"  ✓ 莊家自摸勝：莊家+{_dt}台（保底）")
+        print(f"  ✓ 莊家 ron 勝：莊家+{_dr}台（保底，非莊放槍）")
+
         print("\n  ✓ 所有整合測試通過")
 
     # ── 模式選單 / 自動偵測 ──────────────────────────────────────────
