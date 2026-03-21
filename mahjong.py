@@ -2454,7 +2454,7 @@ def main(
                     _total = sum(v for _, v in _score)
                     _detail = " ".join(f"{n}+{v}" for n, v in _score)
                     print(f"台數明細：{_detail} = 共 {_total} 台")
-                    return player, dealer_idx
+                    return player, dealer_idx, seat_winds
 
             # 牌堆若已空（補花後耗盡），宣告和局
             if not m.remain:
@@ -2514,7 +2514,7 @@ def main(
                                 _detail = " ".join(f"{n}+{v}" for n, v in _score)
                                 print(f"台數明細：{_detail} = 共 {_total} 台")
                                 robbed = True
-                                return rob_idx, dealer_idx
+                                return rob_idx, dealer_idx, seat_winds
                     if not robbed:
                         # 無搶槓，補摸一張後繼續本輪出牌（skip_draw=True 跳過下次摸牌）
                         if m.remain:
@@ -2641,7 +2641,7 @@ def main(
                 _total = sum(v for _, v in _score)
                 _detail = " ".join(f"{n}+{v}" for n, v in _score)
                 print(f"台數明細：{_detail} = 共 {_total} 台")
-                return cand_idx, dealer_idx
+                return cand_idx, dealer_idx, seat_winds
 
         # 檢查其他三家是否明槓（AI_AUTO_KONG 控制；人類玩家詢問 y/n）
         kong_player: int | None = None
