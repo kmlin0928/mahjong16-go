@@ -140,15 +140,20 @@ function updateDeckCount(state) {
 }
 
 // ── 風圈門風 ────────────────────────────────────────────────
-const WIND_NUM = { '東': '一', '南': '二', '西': '三', '北': '四' };
-
 function updateWindBadge(state) {
-  const gameWind  = state.game_wind || '?';
-  const dealerWind = (state.seat_winds && state.dealer_idx >= 0)
-    ? state.seat_winds[state.dealer_idx] : '?';
-  const roundNum = WIND_NUM[dealerWind] || '?';
+  const gameWind   = state.game_wind || '?';
+  const winds      = state.seat_winds || [];
+  const dealerWind = (winds.length > 0 && state.dealer_idx >= 0)
+    ? winds[state.dealer_idx] : '?';
   document.getElementById('wind-game').textContent  = gameWind + '風';
-  document.getElementById('wind-round').textContent = dealerWind + roundNum + '局';
+  document.getElementById('wind-round').textContent = dealerWind + '局';
+
+  // 各方位門風標籤
+  const labels = ['label-bottom', 'label-right', 'label-top', 'label-left'];
+  labels.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = winds[i] || '?';
+  });
 }
 
 // ── 四方位渲染 ───────────────────────────────────────────────
