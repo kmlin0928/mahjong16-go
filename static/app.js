@@ -330,7 +330,8 @@ function appendLog(line) {
   p.className = 'latest';
   const match = _LOG_CLASSES.find(({ key }) => line.includes(key));
   if (match) p.classList.add(match.cls);
-  box.prepend(p);    // 最新在最上
+  box.appendChild(p);
+  box.scrollTop = box.scrollHeight;
 }
 
 // ── 遊戲結束 ─────────────────────────────────────────────────

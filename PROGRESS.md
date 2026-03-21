@@ -6,13 +6,14 @@
 ## 任務清單
 
 ### Task 1：style.css — log-box 行距與排列方向
-- [/] 檔案範圍：`static/style.css`
+- [v] 檔案範圍：`static/style.css`
+- Commit afdcc7e：fix(style): log-box 行距歸零並改為正向排列
 - 摘要：
   1. `#log-box p { margin: 1px 0 }` → `margin: 0`
   2. `#log-box` 移除 `flex-direction: column-reverse`（改為預設 column）
 
 ### Task 2：app.js — appendLog 改用 appendChild + 自動捲到底
-- [ ] 檔案範圍：`static/app.js`
+- [/] 檔案範圍：`static/app.js`
 - 摘要：
   1. `box.prepend(p)` → `box.appendChild(p)`
   2. 加上 `box.scrollTop = box.scrollHeight` 確保最新一條完整可見
