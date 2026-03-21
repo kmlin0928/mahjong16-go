@@ -1966,7 +1966,7 @@ class GameSession:
         if self.dealer_idx_override is not None:
             dealer_idx = self.dealer_idx_override
         else:
-            dealer_idx = 0          # 首局東家先莊
+            dealer_idx = random.randrange(4)  # 首局隨機選莊
         game_wind = seat_winds[dealer_idx]  # 局風 = 莊家門風
         game_round_wind = (
             self.game_round_wind_override
@@ -2372,7 +2372,7 @@ def main(
     if dealer_idx_override is not None:
         dealer_idx = dealer_idx_override
     else:
-        dealer_idx = 0          # 首局東家先莊
+        dealer_idx = _rnd.randrange(4)  # 首局隨機選莊
     game_wind = seat_winds[dealer_idx]  # 局風 = 莊家門風
     game_round_wind = game_round_wind_override if game_round_wind_override is not None else game_wind
     consec_label = f"  連莊 {consecutive} 次" if consecutive > 0 else ""
