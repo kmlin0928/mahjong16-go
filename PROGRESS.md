@@ -52,6 +52,12 @@
   - `prompt`: `dict | None`（提示類型與選項）
   - `winner`: `str | None`、`scores`: `list[tuple[str,int]] | None`
 
+### 3b. [/] 根據執行環境自動選擇模式（isatty 判斷）
+- 檔案：`mahjong.py`（`__main__` 區塊）
+- 摘要：
+  - `sys.stdin.isatty() == True`（指令列互動模式）→ 顯示左右鍵選單（現有邏輯）
+  - `sys.stdin.isatty() == False`（非互動、由 web server 或 process manager 啟動）→ 跳過選單，直接進入網頁模式
+
 ### 4. [ ] 建立 FastAPI 後端
 - 檔案：`web_mahjong.py`（新建）
 - 摘要：
