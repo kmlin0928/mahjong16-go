@@ -486,6 +486,16 @@ body {
 
 .bonus-row:empty { display: none; }
 
+/* 花牌列中的牌：與面牌同大、淺綠底色 */
+.bonus-row .tile.discard {
+  width: 32px;
+  height: 46px;
+  background: #d4f0d4;
+  border-bottom-color: #5a9a50;
+}
+.bonus-row .tile.discard .tile-emoji { font-size: 1.2rem; }
+.bonus-row .tile.discard .tile-label { font-size: 0.5rem; }
+
 /* ── Log 收合按鈕 ── */
 #log-toggle {
   width: 100%;
