@@ -32,7 +32,7 @@
   - 維持 data-suit 花色著色，tooltip 顯示牌名
   - 目標：牌片視覺接近 example.webp 的貼圖風格
 
-### 4. [ ] 連莊 / 再來一局機制
+### 4. [v] 連莊 / 再來一局機制
 - 檔案：`web_mahjong.py`、`static/app.js`
 - 摘要：
   - 遊戲結束畫面新增「連莊」與「新局」按鈕

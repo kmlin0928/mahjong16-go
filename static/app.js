@@ -78,14 +78,20 @@ function wsSend(obj) {
 }
 
 // ── 遊戲流程 ────────────────────────────────────────────────
-async function startGame() {
+function startGame() {
+  _startNewGame();
+}
+
+function _startNewGame(dealerIdx = null, consecutive = 0) {
   document.getElementById('start-overlay').style.display = 'none';
   document.getElementById('gameover-banner').style.display = 'none';
   document.getElementById('log-box').innerHTML = '';
   _waiting = true;
   setHandEnabled(false);
   hidePrompt();
-  wsSend({ cmd: 'new_game', contest: true });
+  const cmd = { cmd: 'new_game', contest: true, consecutive };
+  if (dealerIdx !== null) cmd.dealer_idx = dealerIdx;
+  wsSend(cmd);
 }
 
 function sendDiscard(idx) {
@@ -270,14 +276,46 @@ function appendLog(line) {
 // ── 遊戲結束 ─────────────────────────────────────────────────
 function showGameOver(state) {
   hidePrompt();
-  const banner = document.getElementById('gameover-banner');
+  const banner  = document.getElementById('gameover-banner');
+  const btnArea = document.getElementById('gameover-btns');
   banner.style.display = 'block';
-  document.getElementById('gameover-title').textContent =
-    state.winner ? `${state.winner} 胡牌！` : '和局';
+
+  const dealerWind = (state.seat_winds && state.dealer_idx >= 0)
+    ? state.seat_winds[state.dealer_idx] : null;
+  const isConsec = state.winner === null || state.winner === dealerWind;
+
+  // 標題
+  let title = state.winner ? `${state.winner} 胡牌！` : '和局';
+  if (isConsec && state.consecutive > 0) title += `（連莊 ${state.consecutive} 次）`;
+  document.getElementById('gameover-title').textContent = title;
+
+  // 台數
   const sc = document.getElementById('gameover-scores');
   sc.textContent = (state.scores && state.scores.length)
-    ? state.scores.map(([label, pts]) => `${label}　${pts} 台`).join('\n')
+    ? state.scores.map(([label, pts]) => `${label}　${pts} 台`).join('　')
     : '';
+
+  // 按鈕
+  btnArea.innerHTML = '';
+  if (isConsec) {
+    // 連莊：莊家不變，consecutive+1
+    addGameBtn(btnArea, '連莊！', () =>
+      _startNewGame(state.dealer_idx, state.consecutive + 1));
+  } else {
+    // 下莊：新莊家為勝者，consecutive=0
+    const nextDealer = state.seat_winds
+      ? state.seat_winds.indexOf(state.winner) : null;
+    addGameBtn(btnArea, '下莊繼續', () =>
+      _startNewGame(nextDealer >= 0 ? nextDealer : null, 0));
+  }
+  addGameBtn(btnArea, '新局', () => _startNewGame());
+}
+
+function addGameBtn(container, label, onclick) {
+  const btn = document.createElement('button');
+  btn.textContent = label;
+  btn.onclick = onclick;
+  container.appendChild(btn);
 }
 
 // ── 初始化 ───────────────────────────────────────────────────
