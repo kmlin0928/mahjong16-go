@@ -2317,12 +2317,14 @@ def main(
     dealer_idx_override: int | None = None,
     consecutive: int = 0,
     contest_mode: bool = False,
+    seat_winds_override: list[str] | None = None,
 ) -> tuple[int | None, int, list[str]]:
     """四人 AI 麻將主遊戲迴圈。
 
     Args:
-        dealer_idx_override: 指定莊家座位（連莊時傳入）；None 則從東家起莊。
-        consecutive:         本局連莊次數（0 表示首局）。
+        dealer_idx_override:  指定莊家座位（連莊時傳入）；None 則從東家起莊。
+        consecutive:          本局連莊次數（0 表示首局）。
+        seat_winds_override:  指定座次門風；None 時隨機抽定（新局）。
 
     Returns:
         (winner, dealer_idx, seat_winds)：winner 為胡牌玩家索引，和局時為 None。
@@ -2338,8 +2340,12 @@ def main(
     m = Mahjong(n_hand=16)
     m.init_deal()
 
-    # 分配門風（固定順序：玩家 0=東、1=南、2=西、3=北）
-    seat_winds = list(_SEAT_WIND_NAMES)
+    # 分配門風：連莊沿用上局座次，新局隨機抽定
+    import random as _rnd
+    seat_winds = (
+        list(seat_winds_override) if seat_winds_override is not None
+        else _rnd.sample(_SEAT_WIND_NAMES, len(_SEAT_WIND_NAMES))
+    )
     plabel = lambda p: player_label(p, seat_winds)  # noqa: E731
     human_wind = seat_winds[HUMAN_PLAYER]
     if dealer_idx_override is not None:
@@ -2954,12 +2960,14 @@ if __name__ == "__main__":
 
     # 連莊迴圈
     dealer_override: int | None = None
+    winds_override: list[str] | None = None   # None = 首局隨機抽定
     consec = 0
     while True:
         winner, dealer_idx, seat_winds = main(
             dealer_idx_override=dealer_override,
             consecutive=consec,
             contest_mode=contest,
+            seat_winds_override=winds_override,
         )
         if winner == dealer_idx:
             print(f"\n{seat_winds[dealer_idx]} 胡牌！連莊！")
@@ -2972,4 +2980,5 @@ if __name__ == "__main__":
         if ans != "y":
             break
         consec += 1
+        winds_override = seat_winds   # 連莊保持同一座次
         dealer_override = dealer_idx
