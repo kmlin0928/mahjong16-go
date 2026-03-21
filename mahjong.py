@@ -2972,6 +2972,47 @@ if __name__ == "__main__":
         print(f"  ✓ 非莊放槍：+{_pao_other_pts} 台（總{_total_b}台）")
         print(f"  ✓ 自摸：莊家放槍 +{_tsumo_pts} 台（不加台）")
 
+        print("\n--- 單元測試：拉莊台數（非莊家情境）---")
+        _nlaz_p = PlayerState(n_hand=16, hand=list(_win_hand))
+        # 非莊家自摸：拉莊 = 1 + consecutive*2
+        for _consec, _expected in [(1, 3), (2, 5), (3, 7)]:
+            _sc_nt = score_hand(
+                winner=1, dealer_idx=0, consecutive=_consec,
+                is_tsumo=True, p=_nlaz_p, winning_tile=_win_tile,
+                game_wind=_seat_winds[0], seat_winds=_seat_winds,
+            )
+            _laz = next((v for n, v in _sc_nt if n == "拉莊"), 0)
+            assert _laz == _expected, (
+                f"非莊家自摸連莊{_consec} 拉莊應={_expected} 實得={_laz}"
+            )
+            print(f"  ✓ 非莊家自摸連莊{_consec}：拉莊+{_laz}台")
+        # 莊家放槍：拉莊 = 1 + consecutive*2
+        for _consec, _expected in [(1, 3), (2, 5)]:
+            _sc_dp = score_hand(
+                winner=1, dealer_idx=0, consecutive=_consec,
+                is_tsumo=False, p=_nlaz_p, winning_tile=_win_tile,
+                game_wind=_seat_winds[0], seat_winds=_seat_winds,
+                pao_idx=0,
+            )
+            _laz = next((v for n, v in _sc_dp if n == "拉莊"), 0)
+            assert _laz == _expected, (
+                f"莊家放槍連莊{_consec} 拉莊應={_expected} 實得={_laz}"
+            )
+            print(f"  ✓ 莊家放槍連莊{_consec}：拉莊+{_laz}台")
+        # 非莊家放槍：拉莊 = 0
+        for _consec in [1, 2]:
+            _sc_np = score_hand(
+                winner=1, dealer_idx=0, consecutive=_consec,
+                is_tsumo=False, p=_nlaz_p, winning_tile=_win_tile,
+                game_wind=_seat_winds[0], seat_winds=_seat_winds,
+                pao_idx=2,
+            )
+            _laz = next((v for n, v in _sc_np if n == "拉莊"), 0)
+            assert _laz == 0, (
+                f"非莊家放槍連莊{_consec} 拉莊應=0 實得={_laz}"
+            )
+            print(f"  ✓ 非莊家放槍連莊{_consec}：拉莊+{_laz}台（不加）")
+
         print("\n--- 單元測試：莊家保底1台（自摸 & ron）---")
         _dealer_hand = [0,1,2, 4,5,6, 8,9,10, 12,13,14, 16,17,18, 72,73]
         _dealer_tile  = 73

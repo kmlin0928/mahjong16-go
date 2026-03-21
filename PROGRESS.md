@@ -6,7 +6,8 @@
 ## 任務清單
 
 ### Task 1：mahjong.py — score_hand 拉莊公式依情況計算
-- [/] 檔案範圍：`mahjong.py`（score_hand，約 line 1506）
+- [v] 檔案範圍：`mahjong.py`
+- Commit 0b63e6f：fix(mahjong): 拉莊台數依情況計算（非莊家自摸/莊家放槍=1+2N，非莊家放槍=0）（score_hand，約 line 1506）
 - 摘要：
   將原本一律 consecutive×2 改為：
   1. winner == dealer_idx：拉莊 = consecutive × 2（不變）
@@ -16,7 +17,7 @@
      不加拉莊
 
 ### Task 2：mahjong.py — 更新 __main__ 拉莊驗收測試
-- [ ] 檔案範圍：`mahjong.py`（__main__ 拉莊單元測試）
+- [/] 檔案範圍：`mahjong.py`（__main__ 拉莊單元測試）
 - 摘要：
   現有莊家自摸測試（winner=dealer）維持 consecutive×2 結果；
   新增非莊家自摸情境：consecutive=1→3，consecutive=2→5；
