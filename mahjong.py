@@ -1765,6 +1765,7 @@ class GameState:
     winner: str | None = None
     scores: list[tuple[str, int]] | None = None
     drawn_tile_idx: int | None = None  # 排序後新摸牌的索引（human_discard 時有效）
+    all_hands: list[list[str]] | None = None  # game_over 時填入四家完整手牌（已排序）
 
 
 def player_label(player: int, seat_winds: list[str] | None = None) -> str:
@@ -1887,6 +1888,12 @@ class GameSession:
                 drawn_tile_idx = sorted(m.players[HUMAN_PLAYER].hand).index(self._drawn_tile)
             except ValueError:
                 pass
+        all_hands: list[list[str]] | None = None
+        if phase == "game_over":
+            all_hands = [
+                [n_to_chinese(t) for t in sorted(m.players[i].hand)]
+                for i in range(4)
+            ]
         return GameState(
             phase=phase,
             your_hand=your_hand,
@@ -1904,6 +1911,7 @@ class GameSession:
             winner=winner,
             scores=scores,
             drawn_tile_idx=drawn_tile_idx,
+            all_hands=all_hands,
         )
 
     def _log_clear(self) -> None:
