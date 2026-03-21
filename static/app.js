@@ -4,6 +4,31 @@ let _state   = null;
 let _waiting = false;   // 避免重複送出
 let _ws      = null;    // WebSocket 連線
 
+// ── Unicode 麻將符號對照表（U+1F000–U+1F02B） ─────────────────
+const TILE_UNICODE = {
+  // 筒（Circles）1–9: U+1F019–U+1F021
+  '1筒':'🀙','2筒':'🀚','3筒':'🀛','4筒':'🀜','5筒':'🀝',
+  '6筒':'🀞','7筒':'🀟','8筒':'🀠','9筒':'🀡',
+  // 索（Bamboo）1–9: U+1F010–U+1F018
+  '1索':'🀐','2索':'🀑','3索':'🀒','4索':'🀓','5索':'🀔',
+  '6索':'🀕','7索':'🀖','8索':'🀗','9索':'🀘',
+  // 萬（Characters）1–9: U+1F007–U+1F00F
+  '1萬':'🀇','2萬':'🀈','3萬':'🀉','4萬':'🀊','5萬':'🀋',
+  '6萬':'🀌','7萬':'🀍','8萬':'🀎','9萬':'🀏',
+  // 風牌
+  '東':'🀀','南':'🀁','西':'🀂','北':'🀃',
+  // 三元牌
+  '中':'🀄','發':'🀅','白':'🀆',
+  // 花牌: U+1F022–U+1F029
+  '梅':'🀢','蘭':'🀣','菊':'🀤','竹':'🀥',
+  '春':'🀦','夏':'🀧','秋':'🀨','冬':'🀩',
+};
+
+/** 回傳牌片的 { emoji, label }。找不到 Unicode 時 emoji 留空。 */
+function tileContent(name) {
+  return { emoji: TILE_UNICODE[name] ?? '', label: name };
+}
+
 // ── 牌面花色判定 ─────────────────────────────────────────────
 function suitOf(tileName) {
   if (!tileName) return '';
@@ -134,7 +159,19 @@ function makeTileEl(text, extraClass = '') {
   const suit = suitOf(text);
   el.className = 'tile' + (extraClass ? ' ' + extraClass : '') + (suit === 'flower' ? ' flower' : '');
   if (suit) el.dataset.suit = suit;
-  el.textContent = text.length > 2 ? text.slice(0, 2) + '\n' + text.slice(2) : text;
+  if (!text) {
+    // 背面牌：使用 Unicode 背面符號
+    el.textContent = '🀫';
+    el.classList.add('back');
+    return el;
+  }
+  const { emoji, label } = tileContent(text);
+  el.title = label;   // tooltip 顯示牌名
+  if (emoji) {
+    el.innerHTML = `<span class="tile-emoji">${emoji}</span><span class="tile-label">${label}</span>`;
+  } else {
+    el.textContent = label;
+  }
   return el;
 }
 
@@ -153,7 +190,7 @@ function renderDiscards(id, tiles) {
 function renderBackTiles(id, count) {
   const el = document.getElementById(id);
   el.innerHTML = '';
-  for (let i = 0; i < count; i++) el.appendChild(makeTileEl('', 'back'));
+  for (let i = 0; i < count; i++) el.appendChild(makeTileEl(''));
 }
 
 function renderHandButtons(id, tiles, enabled) {
@@ -164,7 +201,13 @@ function renderHandButtons(id, tiles, enabled) {
     btn.className = 'tile-btn';
     const suit = suitOf(t);
     if (suit) btn.dataset.suit = suit;
-    btn.textContent = t.length > 2 ? t.slice(0, 2) + '\n' + t.slice(2) : t;
+    btn.title = t;
+    const { emoji, label } = tileContent(t);
+    if (emoji) {
+      btn.innerHTML = `<span class="tile-emoji">${emoji}</span><span class="tile-label">${label}</span>`;
+    } else {
+      btn.textContent = label;
+    }
     btn.disabled = !enabled;
     btn.onclick = () => sendDiscard(i);
     el.appendChild(btn);

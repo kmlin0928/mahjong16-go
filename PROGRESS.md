@@ -25,7 +25,7 @@
   - AI 回合每步透過 WS 推送 log，前端逐行附加至 log-box
   - 取代目前「整批回傳全部 log」的作法，增加即時感
 
-### 3. [ ] 麻將牌 Unicode 圖形化
+### 3. [v] 麻將牌 Unicode 圖形化
 - 檔案：`static/app.js`、`static/style.css`
 - 摘要：
   - 利用 Unicode U+1F000–U+1F02B 麻將符號替換牌面文字

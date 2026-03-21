@@ -148,33 +148,47 @@ body {
 /* ── 牌片共用（象牙色3D牌） ── */
 .tile {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 38px;
+  width: 32px;
+  height: 46px;
   background: linear-gradient(160deg, #fffef5 60%, #e8e0c8);
   color: #111;
   border-radius: 3px;
-  font-size: 0.62rem;
-  font-weight: 700;
   border-top: 2px solid #fff;
   border-left: 2px solid #f0ead8;
   border-right: 2px solid #a09070;
   border-bottom: 3px solid #887850;
-  white-space: pre-line;
   text-align: center;
-  line-height: 1.1;
   flex-shrink: 0;
   box-shadow: 1px 2px 4px rgba(0,0,0,0.45);
   user-select: none;
+  overflow: hidden;
+  gap: 0;
 }
 
-/* 萬字牌→紅，筒索→黑，字牌→深紅 */
-.tile[data-suit="wan"]  { color: #c0000a; }
-.tile[data-suit="tong"] { color: #1a1a1a; }
-.tile[data-suit="suo"]  { color: #003d00; }
-.tile[data-suit="wind"] { color: #003080; }
-.tile[data-suit="drag"] { color: #8b0000; }
+.tile-emoji {
+  font-size: 1.2rem;
+  line-height: 1;
+  display: block;
+  /* 避免 emoji 被 data-suit 顏色染色 */
+  color: initial;
+}
+
+.tile-label {
+  font-size: 0.5rem;
+  font-weight: 700;
+  line-height: 1;
+  display: block;
+}
+
+/* 牌名顏色（emoji 無法覆蓋時的 fallback） */
+.tile[data-suit="wan"]  .tile-label { color: #c0000a; }
+.tile[data-suit="tong"] .tile-label { color: #1a1a1a; }
+.tile[data-suit="suo"]  .tile-label { color: #003d00; }
+.tile[data-suit="wind"] .tile-label { color: #003080; }
+.tile[data-suit="drag"] .tile-label { color: #8b0000; }
 
 .tile.back {
   background: linear-gradient(160deg, #2a5c8a 40%, #1a3c5a);
@@ -183,43 +197,48 @@ body {
   border-right-color: #0d2035;
   border-bottom-color: #0d2035;
   box-shadow: 1px 2px 4px rgba(0,0,0,0.6);
+  font-size: 1.4rem;
+  color: #5a8ab0;
 }
 
 .tile.flower {
   background: linear-gradient(160deg, #e8f5e0, #c8e8b8);
   border-top-color: #f0fff0;
   border-bottom-color: #6a9a50;
-  color: #2a6a2a;
 }
 
 .tile.discard {
-  width: 22px;
-  height: 30px;
-  font-size: 0.52rem;
+  width: 24px;
+  height: 34px;
   border-width: 1px 1px 2px 1px;
 }
+
+.tile.discard .tile-emoji { font-size: 0.9rem; }
+.tile.discard .tile-label { font-size: 0.42rem; }
 
 /* ── 手牌按鈕（你） ── */
 .hand-buttons .tile-btn {
   cursor: pointer;
-  width: 36px;
-  height: 52px;
+  width: 40px;
+  height: 58px;
   background: linear-gradient(160deg, #fffef5 60%, #e8e0c8);
   color: #111;
   border-radius: 4px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  padding: 2px;
+  padding: 2px 1px;
   border-top: 3px solid #fff;
   border-left: 3px solid #f0ead8;
   border-right: 3px solid #a09070;
   border-bottom: 4px solid #887850;
   box-shadow: 2px 3px 6px rgba(0,0,0,0.5);
   transition: transform 0.1s, box-shadow 0.1s;
-  white-space: pre-line;
   text-align: center;
-  line-height: 1.15;
   user-select: none;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  overflow: hidden;
 }
 
 .hand-buttons .tile-btn:hover:not(:disabled) {
@@ -235,15 +254,18 @@ body {
   transform: none;
 }
 
-/* 手牌按鈕花色著色 */
-.hand-buttons .tile-btn[data-suit="wan"]  { color: #c0000a; }
-.hand-buttons .tile-btn[data-suit="tong"] { color: #1a1a1a; }
-.hand-buttons .tile-btn[data-suit="suo"]  { color: #003d00; }
-.hand-buttons .tile-btn[data-suit="wind"] { color: #003080; }
-.hand-buttons .tile-btn[data-suit="drag"] { color: #8b0000; }
+/* 手牌按鈕 emoji 字型大小 */
+.hand-buttons .tile-btn .tile-emoji { font-size: 1.5rem; line-height: 1; display: block; color: initial; }
+.hand-buttons .tile-btn .tile-label { font-size: 0.6rem; font-weight: 700; line-height: 1; display: block; }
+
+/* 手牌按鈕花色著色（label 部分） */
+.hand-buttons .tile-btn[data-suit="wan"]  .tile-label { color: #c0000a; }
+.hand-buttons .tile-btn[data-suit="tong"] .tile-label { color: #1a1a1a; }
+.hand-buttons .tile-btn[data-suit="suo"]  .tile-label { color: #003d00; }
+.hand-buttons .tile-btn[data-suit="wind"] .tile-label { color: #003080; }
+.hand-buttons .tile-btn[data-suit="drag"] .tile-label { color: #8b0000; }
 .hand-buttons .tile-btn[data-suit="flower"] {
   background: linear-gradient(160deg, #e8f5e0, #c8e8b8);
-  color: #2a6a2a;
 }
 
 /* ── 排列輔助 ── */
