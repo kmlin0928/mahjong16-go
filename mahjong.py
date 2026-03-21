@@ -1458,6 +1458,7 @@ def score_hand(
     is_last_tile: bool = False,
     is_first_round: bool = False,
     tenhou_label: str = "",
+    pao_idx: int | None = None,
 ) -> list[tuple[str, int]]:
     """計算胡牌台數明細。
 
@@ -1475,6 +1476,7 @@ def score_hand(
         is_last_tile:   True = 牌堆最後一張牌（自摸→海底撈月+1；放槍→河底撈魚+1）
         is_first_round: True = 首巡胡牌（天胡/地胡/人胡+16，分別過濾不求/自摸/門清）
         tenhou_label:   "天聽"→+8 或 "地聽"→+4；空字串表示無天地聽加成
+        pao_idx:        放槍者玩家索引（自摸時為 None）；等於 dealer_idx 時額外 +1 台
 
     Returns:
         (規則名稱, 台數) 的列表，台數均為正整數。
@@ -1503,6 +1505,8 @@ def score_hand(
         result.append(("莊家", 1))
     if consecutive >= 1:
         result.append(("拉莊", consecutive * 2))
+    if not is_tsumo and pao_idx is not None and pao_idx == dealer_idx:
+        result.append(("莊家放槍", 1))
 
     has_meld = (p.chi_count + p.pon_count + p.kong_count) > 0
 
