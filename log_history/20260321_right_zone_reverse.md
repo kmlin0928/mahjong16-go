@@ -6,7 +6,8 @@
 ## 任務清單
 
 ### Task 1：style.css — #zone-right 改為 column-reverse，棄牌排在頂部
-- [/] 檔案範圍：`static/style.css`
+- [v] 檔案範圍：`static/style.css`
+- Commit 08b6af5：fix(style): 右側區（下家）改 column-reverse，棄牌排在頂部朝向桌面中央
 - 摘要：
   1. 將現有 `#zone-left, #zone-right` 規則拆分：
      - `#zone-left` 保持 `justify-content: flex-start; padding-top: 8%`（不變）
