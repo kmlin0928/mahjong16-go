@@ -13,7 +13,8 @@
   2. `#log-box` 移除 `flex-direction: column-reverse`（改為預設 column）
 
 ### Task 2：app.js — appendLog 改用 appendChild + 自動捲到底
-- [/] 檔案範圍：`static/app.js`
+- [v] 檔案範圍：`static/app.js`
+- Commit 7d64cd0：fix(app): appendLog 改用 appendChild 並自動捲到最新一條
 - 摘要：
   1. `box.prepend(p)` → `box.appendChild(p)`
   2. 加上 `box.scrollTop = box.scrollHeight` 確保最新一條完整可見
