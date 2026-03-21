@@ -301,14 +301,11 @@ function showGameOver(state) {
     // 連莊：莊家不變，consecutive+1
     addGameBtn(btnArea, '連莊！', () =>
       _startNewGame(state.dealer_idx, state.consecutive + 1));
+    addGameBtn(btnArea, '新局', () => _startNewGame());
   } else {
-    // 下莊：新莊家為勝者，consecutive=0
-    const nextDealer = state.seat_winds
-      ? state.seat_winds.indexOf(state.winner) : null;
-    addGameBtn(btnArea, '下莊繼續', () =>
-      _startNewGame(nextDealer >= 0 ? nextDealer : null, 0));
+    // 下莊：完全重啓，不帶入任何莊家資訊
+    addGameBtn(btnArea, '新局', () => _startNewGame());
   }
-  addGameBtn(btnArea, '新局', () => _startNewGame());
 }
 
 function addGameBtn(container, label, onclick) {

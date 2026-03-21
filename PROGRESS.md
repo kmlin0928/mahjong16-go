@@ -39,6 +39,13 @@
   - `/new_game` 接受 `dealer_idx` 與 `consecutive` 參數，傳給 `GameSession`
   - 前端顯示連莊次數、局風進圈（東→南→西→北）
 
+### 4b. [v] 修正：「下莊」按鈕改為重啓遊戲
+- 檔案：`static/app.js`
+- 摘要：
+  - 目前「下莊繼續」會帶入勝者為新莊家繼續對局，行為不符預期
+  - 改為：下莊時只顯示「新局」按鈕，呼叫 `_startNewGame()`（完全重啓）
+  - 「連莊」按鈕行為不變（莊家不動、consecutive+1）
+
 ### 5. [ ] 手機響應式排版
 - 檔案：`static/style.css`、`static/index.html`
 - 摘要：
