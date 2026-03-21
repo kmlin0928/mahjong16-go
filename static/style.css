@@ -356,10 +356,10 @@ body {
   border-radius: 6px;
   border: 1px solid rgba(200, 150, 10, 0.2);
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
 }
 
-#log-box p { margin: 1px 0; line-height: 1.4; }
+#log-box p { margin: 0; line-height: 1.4; }
 #log-box p.latest { color: #f5d060; }
 #log-box p.log-bonus, #log-box p.log-discard,
 #log-box p.log-chi,   #log-box p.log-pon,   #log-box p.log-kong {
