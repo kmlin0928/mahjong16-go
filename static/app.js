@@ -1,9 +1,10 @@
-/* app.js — 麻將競賽模式前端 */
+/* app.js — 麻將競賽模式前端（WebSocket 串流版） */
 
-let _state = null;
-let _waiting = false;
+let _state   = null;
+let _waiting = false;   // 避免重複送出
+let _ws      = null;    // WebSocket 連線
 
-// ── 牌面花色判定（用於 data-suit CSS 著色） ─────────────────
+// ── 牌面花色判定 ─────────────────────────────────────────────
 function suitOf(tileName) {
   if (!tileName) return '';
   if (tileName.includes('萬')) return 'wan';
@@ -15,55 +16,65 @@ function suitOf(tileName) {
   return '';
 }
 
-// ── API ─────────────────────────────────────────────────────
-async function api(path, params = {}) {
-  const url = new URL(path, location.href);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  const res = await fetch(url, { method: 'POST' });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail ?? res.statusText);
+// ── WebSocket 管理 ───────────────────────────────────────────
+function connectWS() {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  _ws = new WebSocket(`${proto}//${location.host}/ws`);
+
+  _ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.t === 'log') {
+      appendLog(msg.v);
+    } else if (msg.t === 'state') {
+      _waiting = false;
+      renderState(msg.v);
+    } else if (msg.t === 'error') {
+      console.error('WS error:', msg.v);
+      _waiting = false;
+    }
+  };
+
+  _ws.onclose = () => {
+    _ws = null;
+    // 2 秒後重連
+    setTimeout(connectWS, 2000);
+  };
+
+  _ws.onerror = () => _ws.close();
+}
+
+function wsSend(obj) {
+  if (!_ws || _ws.readyState !== WebSocket.OPEN) {
+    console.warn('WS 未連線，等待重連後重試');
+    setTimeout(() => wsSend(obj), 300);
+    return;
   }
-  return res.json();
+  _ws.send(JSON.stringify(obj));
 }
 
 // ── 遊戲流程 ────────────────────────────────────────────────
 async function startGame() {
   document.getElementById('start-overlay').style.display = 'none';
   document.getElementById('gameover-banner').style.display = 'none';
-  try {
-    const state = await api('/new_game', { contest: true });
-    renderState(state);
-  } catch (e) {
-    alert('開局失敗：' + e.message);
-  }
+  document.getElementById('log-box').innerHTML = '';
+  _waiting = true;
+  setHandEnabled(false);
+  hidePrompt();
+  wsSend({ cmd: 'new_game', contest: true });
 }
 
-async function sendDiscard(idx) {
+function sendDiscard(idx) {
   if (_waiting) return;
   _waiting = true;
   setHandEnabled(false);
-  try {
-    const state = await api('/discard', { idx });
-    renderState(state);
-  } catch (e) {
-    alert('出牌失敗：' + e.message);
-  } finally {
-    _waiting = false;
-  }
+  wsSend({ cmd: 'discard', idx });
 }
 
-async function sendAction(type) {
+function sendAction(action) {
   if (_waiting) return;
   _waiting = true;
-  try {
-    const state = await api('/action', { type });
-    renderState(state);
-  } catch (e) {
-    alert('操作失敗：' + e.message);
-  } finally {
-    _waiting = false;
-  }
+  hidePrompt();
+  wsSend({ cmd: 'action', action });
 }
 
 // ── 渲染主控 ────────────────────────────────────────────────
@@ -71,7 +82,7 @@ function renderState(state) {
   _state = state;
   updateWindBadge(state);
   renderAllZones(state);
-  renderLog(state.log);
+  // log 已由 WS 逐行推送，不在此覆蓋
 
   if (state.phase === 'game_over') {
     showGameOver(state);
@@ -95,7 +106,6 @@ function updateWindBadge(state) {
 }
 
 // ── 四方位渲染 ───────────────────────────────────────────────
-// 玩家對應：0=你(下), 1=下家(右), 2=對家(上), 3=上家(左)
 function renderAllZones(state) {
   renderHandButtons('bottom-hand', state.your_hand, state.phase === 'human_discard');
   renderTiles('bottom-melds', flatMelds(state.melds[0]));
@@ -124,7 +134,6 @@ function makeTileEl(text, extraClass = '') {
   const suit = suitOf(text);
   el.className = 'tile' + (extraClass ? ' ' + extraClass : '') + (suit === 'flower' ? ' flower' : '');
   if (suit) el.dataset.suit = suit;
-  // 換行：超過2字元時折行
   el.textContent = text.length > 2 ? text.slice(0, 2) + '\n' + text.slice(2) : text;
   return el;
 }
@@ -168,9 +177,9 @@ function setHandEnabled(enabled) {
 
 // ── 提示卡 ───────────────────────────────────────────────────
 function showPrompt(prompt) {
-  const card = document.getElementById('prompt-card');
+  const card  = document.getElementById('prompt-card');
   const title = document.getElementById('prompt-title');
-  const btns = document.getElementById('prompt-buttons');
+  const btns  = document.getElementById('prompt-buttons');
   card.classList.remove('hidden');
 
   const labels = {
@@ -204,15 +213,15 @@ function addBtn(container, label, onclick) {
   container.appendChild(btn);
 }
 
-// ── 事件 log ─────────────────────────────────────────────────
-function renderLog(lines) {
+// ── 事件 log（逐行附加） ──────────────────────────────────────
+function appendLog(line) {
   const box = document.getElementById('log-box');
-  box.innerHTML = '';
-  lines.forEach(l => {
-    const p = document.createElement('p');
-    p.textContent = l;
-    box.appendChild(p);
-  });
+  // 移除最新行舊標記
+  box.querySelectorAll('p.latest').forEach(p => p.classList.remove('latest'));
+  const p = document.createElement('p');
+  p.textContent = line;
+  p.className = 'latest';
+  box.prepend(p);    // 最新在最上
 }
 
 // ── 遊戲結束 ─────────────────────────────────────────────────
@@ -227,3 +236,8 @@ function showGameOver(state) {
     ? state.scores.map(([label, pts]) => `${label}　${pts} 台`).join('\n')
     : '';
 }
+
+// ── 初始化 ───────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  connectWS();
+});

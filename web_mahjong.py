@@ -5,14 +5,14 @@
 #   "uvicorn[standard]",
 # ]
 # ///
-"""FastAPI 網頁後端，搭配 GameSession 提供麻將競賽模式的 REST API。"""
+"""FastAPI 網頁後端，搭配 GameSession 提供麻將競賽模式的 REST API 與 WebSocket 串流。"""
 from __future__ import annotations
 
+import asyncio
 import dataclasses
-import json
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -78,6 +78,59 @@ def action(type: str) -> JSONResponse:
         raise HTTPException(status_code=400, detail="尚未開始遊戲，請先 POST /new_game")
     state = _session.respond(type)
     return JSONResponse(_state_to_json(state))
+
+
+@app.websocket("/ws")
+async def ws_game(ws: WebSocket) -> None:
+    """WebSocket 遊戲主通道。
+
+    接收指令並推送回應：
+    - 收：``{"cmd": "new_game", "contest": true}``
+    - 收：``{"cmd": "discard", "idx": N}``
+    - 收：``{"cmd": "action", "action": "y"|"n"|"chi:N"}``
+    - 送（多次）：``{"t": "log", "v": "<事件文字>"}``
+    - 送（一次）：``{"t": "state", "v": <GameState dict>}``
+    """
+    await ws.accept()
+    session: GameSession | None = None
+
+    async def _push(state: GameState) -> None:
+        """逐行推送 log，最後推送完整 state。"""
+        for line in state.log:
+            await ws.send_json({"t": "log", "v": line})
+            await asyncio.sleep(0.06)
+        await ws.send_json({"t": "state", "v": _state_to_json(state)})
+
+    try:
+        while True:
+            msg = await ws.receive_json()
+            cmd = msg.get("cmd")
+
+            if cmd == "new_game":
+                contest = bool(msg.get("contest", True))
+                session = GameSession(contest=contest)
+                state = await asyncio.to_thread(session.start)
+
+            elif cmd == "discard":
+                if session is None:
+                    await ws.send_json({"t": "error", "v": "尚未開局"})
+                    continue
+                state = await asyncio.to_thread(session.respond, str(msg.get("idx", 0)))
+
+            elif cmd == "action":
+                if session is None:
+                    await ws.send_json({"t": "error", "v": "尚未開局"})
+                    continue
+                state = await asyncio.to_thread(session.respond, str(msg.get("action", "n")))
+
+            else:
+                await ws.send_json({"t": "error", "v": f"未知指令: {cmd!r}"})
+                continue
+
+            await _push(state)
+
+    except WebSocketDisconnect:
+        pass
 
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
