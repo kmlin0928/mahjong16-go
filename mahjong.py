@@ -1966,7 +1966,7 @@ class GameSession:
         if self.dealer_idx_override is not None:
             dealer_idx = self.dealer_idx_override
         else:
-            dealer_idx = random.randrange(4)  # 首局隨機選莊
+            dealer_idx = _random.randrange(4)  # 首局隨機選莊
         game_wind = seat_winds[dealer_idx]  # 局風 = 莊家門風
         game_round_wind = (
             self.game_round_wind_override
