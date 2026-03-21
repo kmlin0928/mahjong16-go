@@ -8,14 +8,14 @@
 # ///
 """Playwright 驗收：驗證網頁版左上角「x風y局」在 8 局中正確推進（非隨機）。
 
-規則：
-  - 新局開始固定為「東風」+「東局」
-  - 連莊：圈風與局數不變
-  - 下莊（下一局）：局數前進；dealer 回 0 時圈風進一檔
-  - 重置新局：恢復「東風」+「東局」
+規則（莊家門風即圈風）：
+  - 新局開始固定為「東風東局」（dealer_idx=0，圈風=莊家門風=東）
+  - 連莊：dealer 不變，圈風不變
+  - 下莊（下一局）：dealer 前進，圈風隨之改變（= seat_winds[dealer_idx]）
+  - 重置新局：恢復「東風東局」
 
 預期 8 局（假設每局均為下一局）：
-  東風東 → 東風南 → 東風西 → 東風北 → 南風東 → 南風南 → 南風西 → 南風北
+  東風東 → 南風南 → 西風西 → 北風北 → 東風東 → 南風南 → 西風西 → 北風北
 """
 from __future__ import annotations
 
@@ -128,15 +128,14 @@ def main() -> None:
             page.goto(BASE, timeout=10000)
             page.click("#btn-start")
 
-            # 追蹤預期的 (game_wind, dealer_index)
-            exp_wind   = "東"
+            # 追蹤預期的 dealer 索引（圈風=莊家門風，兩者恆等）
             exp_dealer = 0   # index into WINDS
 
             for game_num in range(1, 9):
-                # 等徽章顯示期望的圈風與局數（即可確認新局 render 完成）
-                expected_wg = exp_wind + "風"
-                expected_wr = WINDS[exp_dealer] + "局"
-                wait_badge(page, expected_wg, expected_wr)
+                # 等徽章顯示期望的圈風與局數（兩者相同）
+                expected_w = WINDS[exp_dealer] + "風"
+                expected_r = WINDS[exp_dealer] + "局"
+                wait_badge(page, expected_w, expected_r)
                 wg, wr = get_badge(page)
                 print(f"✓ 局{game_num}：{wg} / {wr}")
 
@@ -153,13 +152,11 @@ def main() -> None:
 
                 if lian.count() > 0:
                     lian.first.click()
-                    # 連莊：dealer 與 game_wind 不變
+                    # 連莊：dealer 不變
                 else:
                     xia.first.click()
-                    # 下一局：dealer 前進
+                    # 下一局：dealer 前進，圈風自動跟進
                     exp_dealer = (exp_dealer + 1) % 4
-                    if exp_dealer == 0:
-                        exp_wind = WINDS[(WINDS.index(exp_wind) + 1) % 4]
 
                 time.sleep(0.2)
 

@@ -1796,7 +1796,6 @@ class GameSession:
         contest: bool = True,
         dealer_idx_override: int | None = None,
         consecutive: int = 0,
-        game_wind_override: str | None = None,
     ) -> None:
         """初始化 GameSession。
 
@@ -1804,12 +1803,10 @@ class GameSession:
             contest:             競賽模式，AI 手牌不顯示牌名
             dealer_idx_override: 指定莊家（連莊時傳入）
             consecutive:         連莊次數
-            game_wind_override:  指定圈風（連莊時傳入）；None 則從首局起算（東風）
         """
         self.contest = contest
         self.dealer_idx_override = dealer_idx_override
         self.consecutive = consecutive
-        self.game_wind_override = game_wind_override
         self._gen: object = None
         self._log: list[str] = []
         self._game_wind: str = ""
@@ -1934,10 +1931,9 @@ class GameSession:
         human_wind = seat_winds[HUMAN_PLAYER]
         if self.dealer_idx_override is not None:
             dealer_idx = self.dealer_idx_override
-            game_wind = self.game_wind_override or seat_winds[0]
         else:
             dealer_idx = 0          # 首局東家先莊
-            game_wind = _SEAT_WIND_NAMES[0]  # 東風
+        game_wind = seat_winds[dealer_idx]  # 莊家門風即圈風
         self._game_wind = game_wind
         self._seat_winds = seat_winds
         self._dealer_idx = dealer_idx
@@ -2280,12 +2276,11 @@ def main(
     dealer_idx_override: int | None = None,
     consecutive: int = 0,
     contest_mode: bool = False,
-    game_wind_override: str | None = None,
 ) -> tuple[int | None, int]:
     """四人 AI 麻將主遊戲迴圈。
 
     Args:
-        dealer_idx_override: 指定莊家座位（連莊時傳入）；None 則隨機決定局風。
+        dealer_idx_override: 指定莊家座位（連莊時傳入）；None 則從東家起莊。
         consecutive:         本局連莊次數（0 表示首局）。
 
     Returns:
@@ -2308,10 +2303,9 @@ def main(
     human_wind = seat_winds[HUMAN_PLAYER]
     if dealer_idx_override is not None:
         dealer_idx = dealer_idx_override
-        game_wind = game_wind_override or seat_winds[0]
     else:
         dealer_idx = 0          # 首局東家先莊
-        game_wind = _SEAT_WIND_NAMES[0]  # 東風
+    game_wind = seat_winds[dealer_idx]  # 莊家門風即圈風
     consec_label = f"  連莊 {consecutive} 次" if consecutive > 0 else ""
     print(f"\n【你是 {human_wind}（座位 {HUMAN_PLAYER}）｜{game_wind}局{consec_label}】")
     for i, w in enumerate(seat_winds):
@@ -2824,16 +2818,13 @@ if __name__ == "__main__":
 
     # 連莊迴圈
     dealer_override: int | None = None
-    wind_override: str | None = None
     consec = 0
     while True:
         winner, dealer_idx = main(
             dealer_idx_override=dealer_override,
             consecutive=consec,
             contest_mode=contest,
-            game_wind_override=wind_override,
         )
-        seat_w = _SEAT_WIND_NAMES  # 固定順序
         if winner == dealer_idx:
             print(f"\n莊家（座位{dealer_idx}）胡牌！連莊！")
         elif winner is None:
@@ -2846,4 +2837,3 @@ if __name__ == "__main__":
             break
         consec += 1
         dealer_override = dealer_idx
-        wind_override = wind_override or seat_w[0]  # 連莊時圈風不變

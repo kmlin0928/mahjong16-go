@@ -85,7 +85,7 @@ function startGame() {
 // 圈風循環（東→南→西→北→東...）
 const WIND_CYCLE = ['東', '南', '西', '北'];
 
-function _startNewGame(dealerIdx = null, consecutive = 0, gameWind = null) {
+function _startNewGame(dealerIdx = null, consecutive = 0) {
   document.getElementById('start-overlay').style.display = 'none';
   document.getElementById('gameover-banner').style.display = 'none';
   document.getElementById('log-box').innerHTML = '';
@@ -94,7 +94,6 @@ function _startNewGame(dealerIdx = null, consecutive = 0, gameWind = null) {
   hidePrompt();
   const cmd = { cmd: 'new_game', contest: true, consecutive };
   if (dealerIdx !== null) cmd.dealer_idx = dealerIdx;
-  if (gameWind !== null)  cmd.game_wind  = gameWind;
   wsSend(cmd);
 }
 
@@ -346,19 +345,15 @@ function showGameOver(state) {
   // 按鈕
   btnArea.innerHTML = '';
   if (isConsec) {
-    // 連莊：莊家不變，game_wind 不變，consecutive+1
+    // 連莊：莊家不變，consecutive+1
     addGameBtn(btnArea, '連莊！', () =>
-      _startNewGame(state.dealer_idx, state.consecutive + 1, state.game_wind));
+      _startNewGame(state.dealer_idx, state.consecutive + 1));
     addGameBtn(btnArea, '重置新局', () => _startNewGame());
   } else {
-    // 下莊：dealer 前進；dealer 回到 0 時圈風進一檔
+    // 下莊：dealer 前進（圈風由後端從 dealer_idx 派生）
     const nextDealer = (state.dealer_idx + 1) % 4;
-    const windIdx    = WIND_CYCLE.indexOf(state.game_wind ?? '東');
-    const nextWind   = nextDealer === 0
-      ? WIND_CYCLE[(windIdx + 1) % 4]
-      : (state.game_wind ?? '東');
     addGameBtn(btnArea, '下一局', () =>
-      _startNewGame(nextDealer, 0, nextWind));
+      _startNewGame(nextDealer, 0));
     addGameBtn(btnArea, '重置新局', () => _startNewGame());
   }
 }
