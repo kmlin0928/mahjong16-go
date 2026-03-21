@@ -2019,10 +2019,6 @@ class GameSession:
                 if m.remain == 0:
                     last_tile_drawn = True
                 _orig_drawn = drawn
-                if not self.contest or player == HUMAN_PLAYER:
-                    self._L(f"{plabel(player)}摸 {n_to_chinese(drawn)}")
-                else:
-                    self._L(f"{plabel(player)}摸牌")
                 p.hand.append(drawn)
                 _bonus_cnt = len(p.bonus)
                 _draw_bonus_silent(m, p, len(p.hand) - 1)
@@ -2441,8 +2437,6 @@ def main(
             if m.remain == 0:
                 last_tile_drawn = True  # 剛摸到牌堆最後一張
             _orig_drawn = drawn
-            _show_tile = not contest_mode or player == HUMAN_PLAYER
-            print(f"\n{plabel(player)}摸{' ' + n_to_chinese(drawn) if _show_tile else ''}", end="")
             p.hand.append(drawn)
             m._draw_bonus(p, len(p.hand) - 1)
             drawn = p.hand[-1]      # 補花後的實際摸入牌
@@ -2563,7 +2557,6 @@ def main(
                         _print_summary()
                         return player, dealer_idx, seat_winds
             skip_draw = False
-            print(f"\n{plabel(player)}出牌", end="")
 
         # 棄牌前將手牌由小到大排列（方便閱讀與選牌）
         p.hand.sort()
