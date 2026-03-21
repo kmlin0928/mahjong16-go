@@ -360,6 +360,14 @@ function showGameOver(state) {
       lbl.className = 'hand-label';
       lbl.textContent = state.seat_winds[i] + '：';
       row.appendChild(lbl);
+      // 面牌（副露組合）
+      const melds = flatMelds(state.melds[i]);
+      if (melds.length) {
+        melds.forEach(t => row.appendChild(makeTileEl(t)));
+        const sep = document.createElement('span');
+        sep.className = 'meld-sep';
+        row.appendChild(sep);
+      }
       hand.forEach(t => row.appendChild(makeTileEl(t)));
       handsEl.appendChild(row);
     });

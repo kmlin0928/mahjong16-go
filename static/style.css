@@ -461,6 +461,16 @@ body {
   font-size: 1rem;
 }
 
+#gameover-hands .meld-sep {
+  display: inline-block;
+  width: 2px;
+  height: 34px;
+  background: rgba(200,150,10,0.5);
+  margin: 0 4px;
+  border-radius: 1px;
+  vertical-align: middle;
+}
+
 #gameover-btns {
   display: flex;
   gap: 12px;
