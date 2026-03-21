@@ -312,7 +312,7 @@ function addBtn(container, label, onclick) {
 }
 
 // ── 事件 log（逐行附加） ──────────────────────────────────────
-const _MELD_KEYWORDS = ['吃', '碰', '槓', '補花'];
+const _MELD_KEYWORDS = ['打', '吃', '碰', '槓', '補花'];
 
 function appendLog(line) {
   const box = document.getElementById('log-box');

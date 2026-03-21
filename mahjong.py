@@ -1974,7 +1974,6 @@ class GameSession:
 
         # 補花（使用 len 而非 n_hand，確保莊家第 17 張也補花）
         import contextlib as _cl, io as _io
-        _init_bonus_logs: list[str] = []
         for _pi in range(4):
             _pp = m.players[_pi]
             _bonus_before = len(_pp.bonus)
@@ -1983,7 +1982,7 @@ class GameSession:
             _new_bonus = _pp.bonus[_bonus_before:]
             if _new_bonus:
                 _tiles_str = " ".join(n_to_chinese(t) for t in _new_bonus)
-                _init_bonus_logs.append(f"{seat_winds[_pi]}補花 {_tiles_str}")
+                self._L(f"{seat_winds[_pi]}補花 {_tiles_str}")
             for _t in _pp.hand:
                 _pp.add_seen(_t)
 
@@ -2006,12 +2005,6 @@ class GameSession:
         while m.remain:
             p = m.players[player]
             ai = m.ai[player]
-            self._log_clear()
-            # 初始補花 log 在第一回合 _log_clear 後填入，確保前端收到
-            for _line in _init_bonus_logs:
-                self._L(_line)
-            _init_bonus_logs.clear()
-
             if not skip_draw:
                 after_supplement = False
                 last_tile_drawn = False
@@ -2042,6 +2035,7 @@ class GameSession:
                     if player == HUMAN_PLAYER:
                         pr = PromptInfo(type="win_tsumo", tile=n_to_chinese(drawn), tile_id=drawn)
                         resp: str = yield self._snapshot(m, "prompt", prompt=pr)
+                        self._log_clear()
                         if resp == "y":
                             _sc = score_hand(
                                 player, dealer_idx, self.consecutive, True, p, drawn,
@@ -2072,6 +2066,7 @@ class GameSession:
                     if player == HUMAN_PLAYER:
                         pr = PromptInfo(type="add_kong", tile=n_to_chinese(drawn), tile_id=drawn)
                         resp = yield self._snapshot(m, "prompt", prompt=pr)
+                        self._log_clear()
                         do_add = (resp == "y")
                     elif AI_AUTO_KONG:
                         do_add = True
@@ -2093,6 +2088,7 @@ class GameSession:
                                 if rob_idx == HUMAN_PLAYER:
                                     pr2 = PromptInfo(type="rob_kong", tile=n_to_chinese(drawn), tile_id=drawn)
                                     resp2: str = yield self._snapshot(m, "prompt", prompt=pr2)
+                                    self._log_clear()
                                     do_rob = (resp2 == "y")
                                 if do_rob:
                                     _sc = score_hand(
@@ -2145,6 +2141,7 @@ class GameSession:
             p.hand.sort()
             if player == HUMAN_PLAYER:
                 resp = yield self._snapshot(m, "human_discard")
+                self._log_clear()
                 discard_idx = int(resp)
                 discard_tile = p.hand[discard_idx]
                 p.hand[discard_idx] = p.hand[-1]
@@ -2189,6 +2186,7 @@ class GameSession:
                     if cand_idx == HUMAN_PLAYER:
                         pr = PromptInfo(type="win_ron", tile=n_to_chinese(discard_tile), tile_id=discard_tile)
                         resp = yield self._snapshot(m, "prompt", prompt=pr)
+                        self._log_clear()
                         if resp != "y":
                             continue
                     cand_p.hand.append(discard_tile)
@@ -2212,6 +2210,7 @@ class GameSession:
                     if cand_idx == HUMAN_PLAYER:
                         pr = PromptInfo(type="kong", tile=n_to_chinese(discard_tile), tile_id=discard_tile)
                         resp = yield self._snapshot(m, "prompt", prompt=pr)
+                        self._log_clear()
                         if resp != "y":
                             continue
                     elif not AI_AUTO_KONG:
@@ -2237,6 +2236,7 @@ class GameSession:
                         if cand_idx == HUMAN_PLAYER:
                             pr = PromptInfo(type="pon", tile=n_to_chinese(discard_tile), tile_id=discard_tile)
                             resp = yield self._snapshot(m, "prompt", prompt=pr)
+                            self._log_clear()
                             if resp != "y":
                                 continue
                         ta, tb = pon_pair
@@ -2293,6 +2293,7 @@ class GameSession:
                             tile_id=discard_tile, chi_options=chi_opts,
                         )
                         resp = yield self._snapshot(m, "prompt", prompt=pr)
+                        self._log_clear()
                         if resp in ("n", "pass"):
                             do_chi = False
                         else:
