@@ -2067,6 +2067,7 @@ class GameSession:
                                         rob_idx, dealer_idx, self.consecutive, False, rob_p,
                                         drawn, game_wind, seat_winds, is_rob_kong=True,
                                         tenhou_label=tenhou_flags.get(rob_idx, ""),
+                                        pao_idx=player,
                                     )
                                     self._L(f"{plabel(rob_idx)}搶槓胡！")
                                     return self._snapshot(m, "game_over", winner=plabel(rob_idx), scores=_sc)
@@ -2156,6 +2157,7 @@ class GameSession:
                         cand_idx, dealer_idx, self.consecutive, False, cand_p,
                         discard_tile, game_wind, seat_winds, is_last_tile=last_tile_drawn,
                         is_first_round=first_round, tenhou_label=tenhou_flags.get(cand_idx, ""),
+                        pao_idx=player,
                     )
                     cand_p.hand.pop()
                     self._L(f"{plabel(cand_idx)}胡！（{plabel(player)} 放槍）")
@@ -2456,6 +2458,7 @@ def main(
                                     False, rob_p, drawn,
                                     game_wind, seat_winds, is_rob_kong=True,
                                     tenhou_label=tenhou_flags.get(rob_idx, ""),
+                                    pao_idx=player,
                                 )
                                 rob_p.hand.pop()
                                 _total = sum(v for _, v in _score)
@@ -2584,7 +2587,7 @@ def main(
                 for t in _cp.hand[:-1]:
                     print(f" {n_to_chinese(t)}", end="")
                 print()
-                _score = score_hand(cand_idx, dealer_idx, consecutive, False, _cp, discard_tile, game_wind, seat_winds, is_last_tile=last_tile_drawn, is_first_round=first_round, tenhou_label=tenhou_flags.get(cand_idx, ""))
+                _score = score_hand(cand_idx, dealer_idx, consecutive, False, _cp, discard_tile, game_wind, seat_winds, is_last_tile=last_tile_drawn, is_first_round=first_round, tenhou_label=tenhou_flags.get(cand_idx, ""), pao_idx=player)
                 _cp.hand.pop()                  # 還原
                 _total = sum(v for _, v in _score)
                 _detail = " ".join(f"{n}+{v}" for n, v in _score)
