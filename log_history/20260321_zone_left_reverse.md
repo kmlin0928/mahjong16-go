@@ -3,14 +3,16 @@
 ## 任務清單
 
 ### Task 1：style.css — 上家區塊改為 column-reverse 排列
-- [/] 檔案範圍：`static/style.css`（#zone-left）
+- [v] 檔案範圍：`static/style.css`（#zone-left）
+  - 730e37e fix(style): 上家區塊改為 column-reverse 排列，棄牌朝向桌面中央
 - 摘要：
   仿照 #zone-right 的 flex-direction: column-reverse，
   讓棄牌列出現在視覺上方（靠近桌面中央），
   並調整 justify-content / padding 使牌列對齊正確
 
 ### Task 2：Playwright 視覺測試
-- [ ] 檔案範圍：Playwright 測試腳本（暫時執行，不提交）
+- [v] 檔案範圍：Playwright 測試腳本（暫時執行，不提交）
+  - 截圖確認 #left-discards y=344 ≈ #zone-left y=340，棄牌列在視覺頂部，與下家對稱
 - 摘要：
   啟動網頁版，截圖確認上家/下家的棄牌列位置正確
 
