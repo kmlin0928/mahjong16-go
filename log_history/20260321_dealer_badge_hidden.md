@@ -2,7 +2,8 @@
 
 ## 任務清單
 
-[/] Task 1：補上 .dealer-badge.hidden 的隱藏規則
+[v] Task 1：補上 .dealer-badge.hidden 的隱藏規則
+- 4103723 fix(web): 補上 .dealer-badge.hidden 隱藏規則，非莊家方位不顯示連莊標籤
 
 ## 狀態規則
 [ ] 未開始 | [/] 進行中 | [v] 完成
