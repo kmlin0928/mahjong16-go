@@ -349,6 +349,22 @@ function showGameOver(state) {
     ? state.scores.map(([label, pts]) => `${label}　${pts} 台`).join('　')
     : '';
 
+  // 四家手牌
+  const handsEl = document.getElementById('gameover-hands');
+  handsEl.innerHTML = '';
+  if (state.all_hands && state.seat_winds) {
+    state.all_hands.forEach((hand, i) => {
+      const row = document.createElement('div');
+      row.className = 'hand-row';
+      const lbl = document.createElement('span');
+      lbl.className = 'hand-label';
+      lbl.textContent = state.seat_winds[i] + '：';
+      row.appendChild(lbl);
+      hand.forEach(t => row.appendChild(makeTileEl(t)));
+      handsEl.appendChild(row);
+    });
+  }
+
   // 按鈕
   btnArea.innerHTML = '';
   if (isConsec) {

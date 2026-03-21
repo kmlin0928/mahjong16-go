@@ -429,6 +429,38 @@ body {
   line-height: 1.8;
 }
 
+#gameover-hands {
+  margin: 10px 0 18px;
+  text-align: left;
+  max-width: 600px;
+}
+
+#gameover-hands .hand-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin: 4px 0;
+}
+
+#gameover-hands .hand-label {
+  font-size: 0.8rem;
+  color: #f5d060;
+  font-weight: 700;
+  min-width: 2.2em;
+  margin-right: 4px;
+}
+
+#gameover-hands .tile {
+  width: 24px;
+  height: 34px;
+  font-size: 0.5rem;
+}
+
+#gameover-hands .tile .tile-emoji {
+  font-size: 1rem;
+}
+
 #gameover-btns {
   display: flex;
   gap: 12px;
