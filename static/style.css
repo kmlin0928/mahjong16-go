@@ -23,8 +23,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0;
-  /* 八角形：clip-path */
+  justify-content: center;
+  gap: 2px;
   clip-path: polygon(
     20% 0%, 80% 0%,
     100% 20%, 100% 80%,
@@ -33,9 +33,8 @@ body {
   );
   background: linear-gradient(145deg, #2a1a00, #5c3a00);
   border: 0;
-  width: 58px;
-  height: 58px;
-  justify-content: center;
+  width: 72px;
+  height: 72px;
   box-shadow: 0 0 0 3px #c8960a, 0 0 12px rgba(200,150,10,0.6);
 }
 
@@ -45,8 +44,8 @@ body {
   position: fixed;
   top: 11px;
   left: 11px;
-  width: 64px;
-  height: 64px;
+  width: 78px;
+  height: 78px;
   clip-path: polygon(
     20% 0%, 80% 0%,
     100% 20%, 100% 80%,
@@ -57,25 +56,21 @@ body {
   z-index: 99;
 }
 
-.wind-game {
-  font-size: 1.55rem;
+#wind-game {
+  font-size: 1rem;
   font-weight: 900;
   color: #f5d060;
   line-height: 1;
   text-shadow: 0 1px 4px #000;
-}
-
-.wind-sep {
-  font-size: 0.5rem;
-  color: #d4a843;
   letter-spacing: 0.05em;
 }
 
-.wind-seat {
-  font-size: 0.75rem;
+#wind-round {
+  font-size: 0.7rem;
   font-weight: 700;
   color: #a8f0a8;
   line-height: 1;
+  letter-spacing: 0.02em;
 }
 
 /* ── 桌面外框 ── */
