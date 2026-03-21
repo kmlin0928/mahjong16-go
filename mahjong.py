@@ -2311,7 +2311,7 @@ def main(
     dealer_idx_override: int | None = None,
     consecutive: int = 0,
     contest_mode: bool = False,
-) -> tuple[int | None, int]:
+) -> tuple[int | None, int, list[str]]:
     """四人 AI 麻將主遊戲迴圈。
 
     Args:
@@ -2319,7 +2319,7 @@ def main(
         consecutive:         本局連莊次數（0 表示首局）。
 
     Returns:
-        (winner, dealer_idx)：winner 為胡牌玩家索引，和局時為 None。
+        (winner, dealer_idx, seat_winds)：winner 為胡牌玩家索引，和局時為 None。
 
     流程：
     1. 初始化並發牌、補花
@@ -2424,7 +2424,7 @@ def main(
                         _total = sum(v for _, v in _score)
                         _detail = " ".join(f"{n}+{v}" for n, v in _score)
                         print(f"台數明細：{_detail} = 共 {_total} 台")
-                        return player, dealer_idx
+                        return player, dealer_idx, seat_winds
                 else:
                     print(f"\n{plabel(player)}胡", end="")
                     for t in p.hand[:-1]:
@@ -2519,7 +2519,7 @@ def main(
                         _total = sum(v for _, v in _score)
                         _detail = " ".join(f"{n}+{v}" for n, v in _score)
                         print(f"台數明細：{_detail} = 共 {_total} 台")
-                        return player, dealer_idx
+                        return player, dealer_idx, seat_winds
             skip_draw = False
             print(f"\n{plabel(player)}出牌", end="")
 
@@ -2761,7 +2761,7 @@ def main(
                 player = (player + 1) % 4
 
     print("\n和局")
-    return None, dealer_idx
+    return None, dealer_idx, seat_winds
 
 
 if __name__ == "__main__":
@@ -2950,17 +2950,17 @@ if __name__ == "__main__":
     dealer_override: int | None = None
     consec = 0
     while True:
-        winner, dealer_idx = main(
+        winner, dealer_idx, seat_winds = main(
             dealer_idx_override=dealer_override,
             consecutive=consec,
             contest_mode=contest,
         )
         if winner == dealer_idx:
-            print(f"\n莊家（座位{dealer_idx}）胡牌！連莊！")
+            print(f"\n{seat_winds[dealer_idx]} 胡牌！連莊！")
         elif winner is None:
             print(f"\n和局！連莊！")
         else:
-            print(f"\n下莊（座位{winner} 胡牌）。結束。")
+            print(f"\n下莊（{seat_winds[winner]} 胡牌）。")
             break
         ans = input("繼續下一局？(y/n) ").strip().lower()
         if ans != "y":
