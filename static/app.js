@@ -315,6 +315,14 @@ function addGameBtn(container, label, onclick) {
   container.appendChild(btn);
 }
 
+// ── Log 收合（手機用） ────────────────────────────────────────
+function toggleLog() {
+  const box = document.getElementById('log-box');
+  const btn = document.getElementById('log-toggle');
+  const collapsed = box.classList.toggle('collapsed');
+  btn.textContent = collapsed ? '▼ 事件記錄' : '▲ 事件記錄';
+}
+
 // ── 初始化 ───────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   connectWS();

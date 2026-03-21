@@ -437,3 +437,128 @@ body {
 #log-box::-webkit-scrollbar { width: 4px; }
 #log-box::-webkit-scrollbar-track { background: transparent; }
 #log-box::-webkit-scrollbar-thumb { background: #5c3a00; border-radius: 2px; }
+
+/* ── Log 收合按鈕 ── */
+#log-toggle {
+  width: 100%;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(200,150,10,0.3);
+  border-radius: 5px 5px 0 0;
+  color: #c8c8c8;
+  font-size: 0.62rem;
+  padding: 3px 6px;
+  cursor: pointer;
+  text-align: left;
+  display: none;        /* 桌面版隱藏 */
+}
+
+#log-toggle:hover { background: rgba(0,0,0,0.5); }
+
+#log-box.collapsed { display: none; }
+
+/* ════════════════════════════════════════
+   手機響應式（≤ 600px）
+   ════════════════════════════════════════ */
+@media (max-width: 600px) {
+  body { overflow: auto; align-items: flex-start; padding-top: 0; }
+
+  /* 風圈縮小 */
+  #wind-badge {
+    width: 44px;
+    height: 44px;
+    top: 8px;
+    left: 8px;
+  }
+  #wind-badge::before { width: 50px; height: 50px; top: 5px; left: 5px; }
+  .wind-game  { font-size: 1.1rem; }
+  .wind-seat  { font-size: 0.6rem; }
+  .wind-sep   { font-size: 0.45rem; }
+
+  /* 牌桌整體 */
+  #table-wrap {
+    width: 100vw;
+    height: auto;
+    min-height: 100dvh;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    padding: 4px 2px;
+    gap: 2px;
+    grid-template-rows: auto auto 1fr;
+  }
+
+  /* 對家區：只保留棄牌，隱藏手牌背面 */
+  #top-hand  { display: none; }
+  #zone-top  { padding: 2px; gap: 2px; }
+
+  /* 左右側區：收窄，隱藏手牌 */
+  #zone-left, #zone-right {
+    min-width: 0;
+    width: 28px;
+    padding: 2px 1px;
+    gap: 2px;
+    justify-content: flex-start;
+  }
+  #left-hand, #right-hand { display: none; }
+
+  /* 中央區：縮小 */
+  #zone-center {
+    min-width: 0;
+    max-width: none;
+    flex: 1;
+    padding: 4px;
+    gap: 4px;
+  }
+
+  /* AI 棄牌小型化 */
+  #top-discards .tile.discard,
+  #left-discards .tile.discard,
+  #right-discards .tile.discard {
+    width: 18px;
+    height: 26px;
+  }
+  #top-discards .tile.discard .tile-emoji,
+  #left-discards .tile.discard .tile-emoji,
+  #right-discards .tile.discard .tile-emoji { font-size: 0.7rem; }
+  #top-discards .tile.discard .tile-label,
+  #left-discards .tile.discard .tile-label,
+  #right-discards .tile.discard .tile-label { display: none; }
+
+  /* 左右棄牌改橫排（在收窄的側欄中）*/
+  #left-discards, #right-discards {
+    flex-direction: column;
+    overflow: hidden;
+    max-height: 160px;
+  }
+
+  /* 你的棄牌與面牌 */
+  #bottom-discards .tile.discard { width: 20px; height: 28px; }
+  #bottom-discards .tile.discard .tile-emoji { font-size: 0.75rem; }
+  #bottom-discards .tile.discard .tile-label { display: none; }
+
+  /* 你的手牌：縮小並允許換行 */
+  #bottom-hand {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 2px;
+    max-width: 100%;
+  }
+  .hand-buttons .tile-btn {
+    width: 32px;
+    height: 46px;
+  }
+  .hand-buttons .tile-btn .tile-emoji { font-size: 1.1rem; }
+  .hand-buttons .tile-btn .tile-label { font-size: 0.5rem; }
+
+  /* Log 收合按鈕在手機顯示 */
+  #log-toggle { display: block; }
+
+  #log-box {
+    max-height: 72px;
+    font-size: 0.58rem;
+  }
+
+  /* 提示卡 */
+  #prompt-title { font-size: 0.8rem; }
+  #prompt-buttons button { padding: 4px 8px; font-size: 0.75rem; }
+}
