@@ -1756,6 +1756,7 @@ class GameState:
     seat_winds: list[str] = field(default_factory=list)
     dealer_idx: int = -1
     consecutive: int = 0
+    deck_remaining: int = 0
     prompt: PromptInfo | None = None
     winner: str | None = None
     scores: list[tuple[str, int]] | None = None
@@ -1883,6 +1884,7 @@ class GameSession:
             seat_winds=self._seat_winds,
             dealer_idx=self._dealer_idx,
             consecutive=self.consecutive,
+            deck_remaining=len(m.remain),
             prompt=prompt,
             winner=winner,
             scores=scores,

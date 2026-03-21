@@ -112,6 +112,7 @@ function sendAction(action) {
 function renderState(state) {
   _state = state;
   updateWindBadge(state);
+  updateDeckCount(state);
   renderAllZones(state);
   // log 已由 WS 逐行推送，不在此覆蓋
 
@@ -127,6 +128,15 @@ function renderState(state) {
     hidePrompt();
     setHandEnabled(state.phase === 'human_discard');
   }
+}
+
+// ── 剩餘牌數 ────────────────────────────────────────────────
+function updateDeckCount(state) {
+  const el = document.getElementById('deck-count');
+  if (!el) return;
+  const n = state.deck_remaining ?? 0;
+  el.textContent = `剩 ${n} 張`;
+  el.classList.toggle('danger', n <= 10);
 }
 
 // ── 風圈門風 ────────────────────────────────────────────────

@@ -14,7 +14,7 @@
   - 你的花牌顯示在手牌上方，AI 花牌顯示在對應方位
   - 花牌以綠底牌片呈現，與棄牌尺寸相同
 
-### 2. [ ] 剩餘牌數顯示
+### 2. [v] 剩餘牌數顯示
 - 檔案：`mahjong.py`（GameState 加 `deck_remaining: int`）、`static/app.js`、`static/style.css`
 - 摘要：
   - `_snapshot()` 加入 `len(m.remain)` 作為剩餘牌數

@@ -438,6 +438,31 @@ body {
 #log-box::-webkit-scrollbar-track { background: transparent; }
 #log-box::-webkit-scrollbar-thumb { background: #5c3a00; border-radius: 2px; }
 
+/* ── 剩餘牌數 ── */
+#deck-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #c8c8c8;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(200,150,10,0.25);
+  border-radius: 5px;
+  padding: 3px 8px;
+  text-align: center;
+  letter-spacing: 0.05em;
+  transition: color 0.3s, border-color 0.3s;
+}
+
+#deck-count.danger {
+  color: #ff4444;
+  border-color: #ff4444;
+  animation: pulse-red 1s ease-in-out infinite;
+}
+
+@keyframes pulse-red {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
 /* ── 花牌列（bonus-row） ── */
 .bonus-row {
   min-height: 0;
