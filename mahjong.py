@@ -1925,14 +1925,10 @@ class GameSession:
         import contextlib as _cl, io as _io
 
         def _draw_bonus_silent(m_: "Mahjong", p_: "PlayerState", idx_: int) -> None:
-            """靜默版 _draw_bonus，補牌資訊改寫入 log。"""
+            """靜默版 _draw_bonus：補牌動作不直接輸出，由呼叫端視需要記錄 log。"""
             import contextlib as _c2, io as _i2
             with _c2.redirect_stdout(_i2.StringIO()):
                 m_._draw_bonus(p_, idx_)
-            if p_.bonus:
-                bonus_tile = p_.bonus[-1]
-                if not self.contest or p_ is m_.players[HUMAN_PLAYER]:
-                    self._L(f"  補花 {n_to_chinese(bonus_tile)}")
 
         m = Mahjong(n_hand=16)
         m.init_deal()
@@ -1964,10 +1960,16 @@ class GameSession:
 
         # 補花（使用 len 而非 n_hand，確保莊家第 17 張也補花）
         import contextlib as _cl, io as _io
+        _init_bonus_logs: list[str] = []
         for _pi in range(4):
             _pp = m.players[_pi]
+            _bonus_before = len(_pp.bonus)
             for _i in range(len(_pp.hand)):
                 _draw_bonus_silent(m, _pp, _i)
+            _new_bonus = _pp.bonus[_bonus_before:]
+            if _new_bonus:
+                _tiles_str = " ".join(n_to_chinese(t) for t in _new_bonus)
+                _init_bonus_logs.append(f"{seat_winds[_pi]}補花 {_tiles_str}")
             for _t in _pp.hand:
                 _pp.add_seen(_t)
 
@@ -1991,6 +1993,10 @@ class GameSession:
             p = m.players[player]
             ai = m.ai[player]
             self._log_clear()
+            # 初始補花 log 在第一回合 _log_clear 後填入，確保前端收到
+            for _line in _init_bonus_logs:
+                self._L(_line)
+            _init_bonus_logs.clear()
 
             if not skip_draw:
                 after_supplement = False
@@ -2004,7 +2010,12 @@ class GameSession:
                 else:
                     self._L(f"{plabel(player)}摸牌")
                 p.hand.append(drawn)
+                _bonus_cnt = len(p.bonus)
                 _draw_bonus_silent(m, p, len(p.hand) - 1)
+                _mid_bonus = p.bonus[_bonus_cnt:]
+                if _mid_bonus:
+                    _tiles_str = " ".join(n_to_chinese(t) for t in _mid_bonus)
+                    self._L(f"{plabel(player)}補花 {_tiles_str}")
                 drawn = p.hand[-1]
                 # 補花失敗（牌堆耗盡）→ 宣告和局
                 if drawn >= BONUS_START:
@@ -2086,7 +2097,12 @@ class GameSession:
                         if not robbed and m.remain:
                             extra = m.deal_one()
                             p.hand.append(extra)
+                            _bonus_cnt_k = len(p.bonus)
                             _draw_bonus_silent(m, p, len(p.hand) - 1)
+                            _kong_bonus = p.bonus[_bonus_cnt_k:]
+                            if _kong_bonus:
+                                _tiles_str = " ".join(n_to_chinese(t) for t in _kong_bonus)
+                                self._L(f"{plabel(player)}補花 {_tiles_str}")
                             if not self.contest or player == HUMAN_PLAYER:
                                 self._L(f"補摸 {n_to_chinese(p.hand[-1])}")
                         after_supplement = True
