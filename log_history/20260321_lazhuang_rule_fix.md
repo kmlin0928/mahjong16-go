@@ -17,7 +17,8 @@
      不加拉莊
 
 ### Task 2：mahjong.py — 更新 __main__ 拉莊驗收測試
-- [/] 檔案範圍：`mahjong.py`（__main__ 拉莊單元測試）
+- [v] 檔案範圍：`mahjong.py`
+- Commit 74cd36e：test(mahjong): 新增拉莊台數非莊家情境驗收測試（__main__ 拉莊單元測試）
 - 摘要：
   現有莊家自摸測試（winner=dealer）維持 consecutive×2 結果；
   新增非莊家自摸情境：consecutive=1→3，consecutive=2→5；
