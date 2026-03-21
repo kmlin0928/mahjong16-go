@@ -2404,6 +2404,24 @@ def main(
         if _check_tenpai_initial(m.players[_pi].hand):
             tenhou_flags[_pi] = "天聽"
 
+    def _print_summary() -> None:
+        """印出四家的手牌、面牌（吃/碰/槓）、花牌摘要。"""
+        print("\n── 各家牌況 ──")
+        for _i in range(4):
+            _pi = m.players[_i]
+            _hand = " ".join(n_to_chinese(t) for t in sorted(_pi.hand))
+            _meld = "  ".join(
+                "[" + " ".join(n_to_chinese(t) for t in g) + "]"
+                for g in _pi.melds
+            )
+            _bonus = " ".join(n_to_chinese(t) for t in _pi.bonus)
+            _line = f"  {seat_winds[_i]}  手：{_hand}"
+            if _meld:
+                _line += f"  面：{_meld}"
+            if _bonus:
+                _line += f"  花：{_bonus}"
+            print(_line)
+
     player = dealer_idx
     skip_draw = True    # 莊家首輪跳過摸牌，直接出牌
     after_supplement = False  # 是否為補花/加槓後補摸（跨回合保持，用於槓上開花判定）
@@ -2444,6 +2462,7 @@ def main(
                         _total = sum(v for _, v in _score)
                         _detail = " ".join(f"{n}+{v}" for n, v in _score)
                         print(f"台數明細：{_detail} = 共 {_total} 台")
+                        _print_summary()
                         return player, dealer_idx, seat_winds
                 else:
                     print(f"\n{plabel(player)}胡", end="")
@@ -2454,6 +2473,7 @@ def main(
                     _total = sum(v for _, v in _score)
                     _detail = " ".join(f"{n}+{v}" for n, v in _score)
                     print(f"台數明細：{_detail} = 共 {_total} 台")
+                    _print_summary()
                     return player, dealer_idx, seat_winds
 
             # 牌堆若已空（補花後耗盡），宣告和局
@@ -2514,6 +2534,7 @@ def main(
                                 _detail = " ".join(f"{n}+{v}" for n, v in _score)
                                 print(f"台數明細：{_detail} = 共 {_total} 台")
                                 robbed = True
+                                _print_summary()
                                 return rob_idx, dealer_idx, seat_winds
                     if not robbed:
                         # 無搶槓，補摸一張後繼續本輪出牌（skip_draw=True 跳過下次摸牌）
@@ -2539,6 +2560,7 @@ def main(
                         _total = sum(v for _, v in _score)
                         _detail = " ".join(f"{n}+{v}" for n, v in _score)
                         print(f"台數明細：{_detail} = 共 {_total} 台")
+                        _print_summary()
                         return player, dealer_idx, seat_winds
             skip_draw = False
             print(f"\n{plabel(player)}出牌", end="")
@@ -2641,6 +2663,7 @@ def main(
                 _total = sum(v for _, v in _score)
                 _detail = " ".join(f"{n}+{v}" for n, v in _score)
                 print(f"台數明細：{_detail} = 共 {_total} 台")
+                _print_summary()
                 return cand_idx, dealer_idx, seat_winds
 
         # 檢查其他三家是否明槓（AI_AUTO_KONG 控制；人類玩家詢問 y/n）
@@ -2781,6 +2804,7 @@ def main(
                 player = (player + 1) % 4
 
     print("\n和局")
+    _print_summary()
     return None, dealer_idx, seat_winds
 
 
